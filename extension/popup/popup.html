@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wellbeing Check-in</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1>Daily check-in</h1>
+      <p id="status-text">Loading survey...</p>
+    </header>
+
+    <section id="setup-panel" class="panel hidden">
+      <p>Configure your company secret key in settings below.</p>
+    </section>
+
+    <form id="survey-form" class="panel hidden">
+      <div id="questions"></div>
+      <button type="submit" id="submit-btn">Submit answers</button>
+    </form>
+
+    <section id="success-panel" class="panel hidden">
+      <p>Thank you! Your check-in was submitted.</p>
+      <p class="muted">Next reminder tomorrow.</p>
+    </section>
+
+    <footer class="footer">
+      <button id="open-options" type="button" class="secondary">Open settings</button>
+    </footer>
+  </main>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

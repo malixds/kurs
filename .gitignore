@@ -1,0 +1,14 @@
+/vendor/
+/node_modules/
+.env
+backend/.env
+backend/public/build/
+backend/storage/*.key
+backend/storage/logs/*
+backend/storage/framework/cache/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+!backend/storage/**/.gitignore
+.idea/
+.vscode/
+*.log

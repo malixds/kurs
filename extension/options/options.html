@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Extension Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main class="container">
+    <h1>Wellbeing extension settings</h1>
+    <form id="options-form">
+      <label>
+        API base URL
+        <input type="url" id="apiBaseUrl" required>
+      </label>
+      <label>
+        Company secret key
+        <input type="text" id="secretKey" minlength="48" maxlength="48" required>
+      </label>
+      <label>
+        Employee external ID
+        <input type="text" id="employeeExternalId" required>
+      </label>
+      <label>
+        Email (optional)
+        <input type="email" id="employeeEmail">
+      </label>
+      <label>
+        Name (optional)
+        <input type="text" id="employeeName">
+      </label>
+      <label>
+        Daily reminder hour (0-23)
+        <input type="number" id="reminderHour" min="0" max="23" required>
+      </label>
+      <button type="submit">Save settings</button>
+    </form>
+    <p id="save-status" class="muted"></p>
+  </main>
+  <script type="module" src="options.js"></script>
+</body>
+</html>
