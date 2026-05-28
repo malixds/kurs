@@ -3,6 +3,7 @@
 @section('title', $employee->name ?? 'Employee')
 
 @section('content')
+    @include('dashboard.partials.nav')
     <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
             <a href="{{ route('dashboard.index') }}" class="text-sm text-indigo-400 hover:text-indigo-300">← Back to dashboard</a>
@@ -42,29 +43,81 @@
     </div>
 
     <div class="mt-8 rounded-2xl border border-slate-800 bg-slate-900 p-5">
-        <h2 class="text-lg font-medium">Daily history</h2>
-        <div class="mt-4 space-y-4">
+        <h2 class="text-lg font-medium">История ответов</h2>
+        <p class="mt-1 text-sm text-slate-400">Нажмите на дату, чтобы раскрыть ответы за день.</p>
+
+        <div class="mt-4 divide-y divide-slate-800 border-y border-slate-800">
             @forelse ($history['history'] as $day)
-                <div class="rounded-xl border border-slate-800 bg-slate-950 p-4">
-                    <div class="flex items-center justify-between">
-                        <p class="font-medium">{{ $day['date'] }}</p>
-                        <p class="text-sm text-slate-400">Avg: {{ $day['average_score'] ?? '—' }}</p>
+                @php
+                    $answerCount = count($day['answers']);
+                    $dateLabel = \Carbon\Carbon::parse($day['date'])->format('d.m.Y');
+                @endphp
+                <details class="check-in-day">
+                    <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-4 text-base [&::-webkit-details-marker]:hidden">
+                        <span class="flex min-w-0 items-center gap-4">
+                            <span class="check-in-day__chevron shrink-0 text-slate-400" aria-hidden="true">▼</span>
+                            <span class="text-lg font-medium text-white">{{ $dateLabel }}</span>
+                        </span>
+                        <span class="flex shrink-0 flex-wrap items-center justify-end gap-x-4 gap-y-1 text-base text-slate-400">
+                            <span>{{ $answerCount }} {{ $answerCount === 1 ? 'ответ' : ($answerCount < 5 ? 'ответа' : 'ответов') }}</span>
+                            <span class="text-slate-500">·</span>
+                            <span>Средний балл: <span class="text-slate-300">{{ $day['average_score'] ?? '—' }}</span></span>
+                        </span>
+                    </summary>
+                    <div class="check-in-day__panel">
+                        <div class="check-in-day__panel-inner border-t border-slate-800 pb-4 pl-9 pr-0 pt-3">
+                            <ul class="space-y-4 text-base text-slate-300">
+                                @foreach ($day['answers'] as $answer)
+                                    <li class="border-b border-slate-800 pb-4 last:border-b-0 last:pb-0">
+                                        <p class="text-sm font-medium text-slate-500">{{ $answer['question'] }}</p>
+                                        <p class="mt-1.5">{{ $answer['answer'] }}</p>
+                                        @if ($answer['score'] !== null)
+                                            <p class="mt-1.5 text-sm text-slate-500">Оценка: {{ $answer['score'] }}</p>
+                                        @endif
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
                     </div>
-                    <ul class="mt-3 space-y-2 text-sm text-slate-300">
-                        @foreach ($day['answers'] as $answer)
-                            <li>
-                                <span class="text-slate-400">{{ $answer['question'] }}:</span>
-                                {{ $answer['answer'] }}
-                                @if ($answer['score'] !== null)
-                                    <span class="text-slate-500">({{ $answer['score'] }})</span>
-                                @endif
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
+                </details>
             @empty
-                <p class="text-slate-400">No check-ins for this period.</p>
+                <p class="py-8 text-center text-base text-slate-400">
+                    За выбранный период нет ответов.
+                </p>
             @endforelse
         </div>
     </div>
+
+    <style>
+        .check-in-day__chevron {
+            display: inline-block;
+            font-size: 1.125rem;
+            line-height: 1;
+            transition: transform 0.2s ease;
+        }
+
+        .check-in-day[open] .check-in-day__chevron {
+            transform: rotate(180deg);
+        }
+
+        .check-in-day__panel {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.25s ease-out;
+        }
+
+        .check-in-day[open] .check-in-day__panel {
+            grid-template-rows: 1fr;
+        }
+
+        .check-in-day__panel-inner {
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 0.2s ease-out;
+        }
+
+        .check-in-day[open] .check-in-day__panel-inner {
+            opacity: 1;
+        }
+    </style>
 @endsection

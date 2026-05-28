@@ -11,6 +11,12 @@
         <h1 class="text-2xl font-semibold">Sign in</h1>
         <p class="mt-2 text-sm text-slate-400">Access your company wellbeing dashboard</p>
 
+        @if (session('info'))
+            <div class="mt-4 rounded-lg border border-indigo-700/50 bg-indigo-950/40 p-3 text-sm text-indigo-100">
+                {{ session('info') }}
+            </div>
+        @endif
+
         @if ($errors->any())
             <div class="mt-4 rounded-lg border border-red-800 bg-red-950/40 p-3 text-sm text-red-200">
                 {{ $errors->first() }}
@@ -37,6 +43,13 @@
                 Sign in
             </button>
         </form>
+
+        <p class="mt-6 text-center text-sm text-slate-400">
+            Нет аккаунта?
+            <a href="{{ route('register') }}" class="text-indigo-400 hover:text-indigo-300">Зарегистрироваться</a>
+            ·
+            <a href="{{ route('onboarding.welcome') }}" class="text-indigo-400 hover:text-indigo-300">О платформе</a>
+        </p>
     </div>
 </body>
 </html>

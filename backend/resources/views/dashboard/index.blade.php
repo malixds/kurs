@@ -3,10 +3,18 @@
 @section('title', 'Dashboard')
 
 @section('content')
+    @include('dashboard.partials.nav')
+
     <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
             <h1 class="text-3xl font-semibold">Team wellbeing overview</h1>
-            <p class="mt-1 text-slate-400">Aggregated mood metrics and burnout indicators</p>
+            <p class="mt-1 text-slate-400">
+                @if ($activeCompany ?? null)
+                    {{ $activeCompany->name }} — aggregated mood metrics and burnout indicators
+                @else
+                    Aggregated mood metrics and burnout indicators
+                @endif
+            </p>
         </div>
         <form method="GET" class="flex flex-wrap items-end gap-3">
             <div>

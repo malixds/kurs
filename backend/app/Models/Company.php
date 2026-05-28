@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
@@ -44,6 +45,13 @@ class Company extends Model
         return $this->hasMany(User::class);
     }
 
+    public function members(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class)
+            ->withPivot('role')
+            ->withTimestamps();
+    }
+
     public function surveys(): HasMany
     {
         return $this->hasMany(Survey::class);
@@ -52,5 +60,15 @@ class Company extends Model
     public function surveyAnswers(): HasMany
     {
         return $this->hasMany(SurveyAnswer::class);
+    }
+
+    public function integrations(): HasMany
+    {
+        return $this->hasMany(CompanyIntegration::class);
+    }
+
+    public function workProgressSnapshots(): HasMany
+    {
+        return $this->hasMany(WorkProgressSnapshot::class);
     }
 }

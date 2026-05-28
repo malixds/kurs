@@ -12,8 +12,12 @@ class EnsureUserHasCompany
     {
         $user = $request->user();
 
-        if ($user === null || $user->company_id === null) {
-            abort(403, 'Company context is required.');
+        if ($user === null || ! $user->companies()->exists()) {
+            if ($request->expectsJson()) {
+                abort(403, 'Company context is required.');
+            }
+
+            return redirect()->route('onboarding.welcome');
         }
 
         return $next($request);

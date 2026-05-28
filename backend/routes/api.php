@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\Dashboard\AnalysisExportController;
 use App\Http\Controllers\Api\V1\Dashboard\AnalyticsController;
 use App\Http\Controllers\Api\V1\Dashboard\AuthController;
 use App\Http\Controllers\Api\V1\Extension\CheckInController;
@@ -22,5 +23,6 @@ Route::prefix('v1/dashboard')->group(function (): void {
 
         Route::get('analytics/overview', [AnalyticsController::class, 'overview']);
         Route::get('analytics/employees/{employeeId}/history', [AnalyticsController::class, 'employeeHistory']);
+        Route::get('analysis/responses', [AnalysisExportController::class, 'responses']);
     });
 });

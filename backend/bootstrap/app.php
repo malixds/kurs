@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureUserHasCompany;
+use App\Http\Middleware\EnsureUserHasNoCompany;
 use App\Http\Middleware\SecureHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -18,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'company' => EnsureUserHasCompany::class,
+            'onboarding' => EnsureUserHasNoCompany::class,
         ]);
 
         $middleware->append(SecureHeaders::class);

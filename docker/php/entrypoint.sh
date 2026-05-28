@@ -15,8 +15,13 @@ if [ -z "$APP_KEY" ] || [ "$APP_KEY" = "base64:" ]; then
     su-exec wellbeing php artisan key:generate --force --no-interaction || true
 fi
 
-su-exec wellbeing php artisan config:cache --no-interaction || true
-su-exec wellbeing php artisan route:cache --no-interaction || true
+if [ "${APP_ENV:-local}" = "local" ]; then
+    su-exec wellbeing php artisan config:clear --no-interaction || true
+    su-exec wellbeing php artisan route:clear --no-interaction || true
+else
+    su-exec wellbeing php artisan config:cache --no-interaction || true
+    su-exec wellbeing php artisan route:cache --no-interaction || true
+fi
 
 if [ "$1" = "php-fpm" ]; then
     exec php-fpm

@@ -134,5 +134,7 @@ class DatabaseSeeder extends Seeder
                 ]);
             }
         }
+
+        $this->call(IntegrationProviderSeeder::class);
     }
 }

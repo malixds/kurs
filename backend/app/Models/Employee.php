@@ -33,4 +33,9 @@ class Employee extends Model
     {
         return $this->hasMany(SurveyAnswer::class);
     }
+
+    public function integrationIdentities(): HasMany
+    {
+        return $this->hasMany(EmployeeIntegrationIdentity::class);
+    }
 }

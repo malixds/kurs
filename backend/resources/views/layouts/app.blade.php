@@ -16,6 +16,11 @@
                 <p class="text-sm text-slate-400">Remote team wellbeing analytics</p>
             </div>
             <div class="flex items-center gap-4">
+                @if (auth()->user()->companies()->exists())
+                    <a href="{{ route('companies.index') }}" class="text-sm text-slate-300 hover:text-white">
+                        Компании
+                    </a>
+                @endif
                 <span class="text-sm text-slate-300">{{ auth()->user()->name }}</span>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf

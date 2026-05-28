@@ -30,15 +30,11 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        if (Auth::user()->company_id === null) {
-            Auth::logout();
-
-            return back()
-                ->withInput($request->only('email'))
-                ->withErrors(['email' => 'User is not assigned to a company.']);
+        if (Auth::user()->companies()->exists()) {
+            return redirect()->intended(route('companies.index'));
         }
 
-        return redirect()->intended(route('dashboard.index'));
+        return redirect()->intended(route('onboarding.welcome'));
     }
 
     public function logout(Request $request): RedirectResponse
@@ -48,6 +44,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login');
+        return redirect()->route('onboarding.welcome');
     }
 }
