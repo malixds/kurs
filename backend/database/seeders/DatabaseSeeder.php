@@ -17,46 +17,43 @@ use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
+    private const DEMO_SECRET_KEY = 'demo_secret_key_12345678901234567890123456789012';
+
     public function run(): void
     {
-        $company = Company::query()->create([
-            'name' => 'Acme Remote Corp',
-            'secret_key' => 'demo_secret_key_12345678901234567890123456789012',
-        ]);
+        $company = Company::query()->firstOrCreate(
+            ['secret_key' => self::DEMO_SECRET_KEY],
+            ['name' => 'Acme Remote Corp'],
+        );
 
-        $engineering = Department::query()->create([
-            'company_id' => $company->id,
-            'name' => 'Engineering',
-            'external_id' => 'eng',
-        ]);
+        $engineering = Department::query()->firstOrCreate(
+            ['company_id' => $company->id, 'external_id' => 'eng'],
+            ['name' => 'Engineering'],
+        );
 
-        $hr = Department::query()->create([
-            'company_id' => $company->id,
-            'name' => 'Human Resources',
-            'external_id' => 'hr',
-        ]);
+        $hr = Department::query()->firstOrCreate(
+            ['company_id' => $company->id, 'external_id' => 'hr'],
+            ['name' => 'Human Resources'],
+        );
 
-        User::query()->create([
-            'company_id' => $company->id,
-            'name' => 'Demo Admin',
-            'email' => 'admin@acme.test',
-            'password' => Hash::make('password'),
-            'role' => UserRole::Admin,
-        ]);
+        $this->seedDemoUser(
+            email: 'admin@acme.test',
+            name: 'Demo Admin',
+            role: UserRole::Admin,
+            company: $company,
+        );
 
-        User::query()->create([
-            'company_id' => $company->id,
-            'name' => 'Demo HR',
-            'email' => 'hr@acme.test',
-            'password' => Hash::make('password'),
-            'role' => UserRole::Hr,
-        ]);
+        $this->seedDemoUser(
+            email: 'hr@acme.test',
+            name: 'Demo HR',
+            role: UserRole::Hr,
+            company: $company,
+        );
 
-        $survey = Survey::query()->create([
-            'company_id' => null,
-            'title' => 'Daily Wellbeing Check-in',
-            'is_active' => true,
-        ]);
+        $survey = Survey::query()->firstOrCreate(
+            ['title' => 'Daily Wellbeing Check-in', 'company_id' => null],
+            ['is_active' => true],
+        );
 
         $questions = [
             [
@@ -85,20 +82,52 @@ class DatabaseSeeder extends Seeder
             ],
         ];
 
-        $questionModels = collect($questions)->map(fn (array $data) => SurveyQuestion::query()->create([
-            'survey_id' => $survey->id,
-            ...$data,
-        ]));
+        $questionModels = collect($questions)->map(fn (array $data) => SurveyQuestion::query()->firstOrCreate(
+            ['survey_id' => $survey->id, 'sort_order' => $data['sort_order']],
+            $data,
+        ));
 
         $employees = collect([
             ['external_id' => 'emp-001', 'name' => 'Alice Johnson', 'email' => 'alice@acme.test', 'department_id' => $engineering->id],
             ['external_id' => 'emp-002', 'name' => 'Bob Smith', 'email' => 'bob@acme.test', 'department_id' => $engineering->id],
             ['external_id' => 'emp-003', 'name' => 'Carol White', 'email' => 'carol@acme.test', 'department_id' => $hr->id],
-        ])->map(fn (array $data) => Employee::query()->create([
-            'company_id' => $company->id,
-            ...$data,
-        ]));
+        ])->map(fn (array $data) => Employee::query()->firstOrCreate(
+            ['company_id' => $company->id, 'external_id' => $data['external_id']],
+            $data,
+        ));
 
+        if (! SurveyAnswer::query()->where('company_id', $company->id)->exists()) {
+            $this->seedDemoAnswers($company, $employees, $questionModels);
+        }
+
+        $this->call(IntegrationProviderSeeder::class);
+    }
+
+    private function seedDemoUser(string $email, string $name, UserRole $role, Company $company): void
+    {
+        $user = User::query()->firstOrCreate(
+            ['email' => $email],
+            [
+                'company_id' => $company->id,
+                'name' => $name,
+                'password' => Hash::make('password'),
+                'role' => $role,
+            ],
+        );
+
+        $user->update([
+            'company_id' => $company->id,
+            'name' => $name,
+            'role' => $role,
+        ]);
+
+        $user->companies()->syncWithoutDetaching([
+            $company->id => ['role' => $role->value],
+        ]);
+    }
+
+    private function seedDemoAnswers(Company $company, $employees, $questionModels): void
+    {
         foreach (range(0, 13) as $daysAgo) {
             $date = Carbon::now()->subDays($daysAgo)->toDateString();
 
@@ -134,7 +163,5 @@ class DatabaseSeeder extends Seeder
                 ]);
             }
         }
-
-        $this->call(IntegrationProviderSeeder::class);
     }
 }
