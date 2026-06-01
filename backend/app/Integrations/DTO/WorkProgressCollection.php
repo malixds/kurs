@@ -11,16 +11,24 @@ readonly class WorkProgressCollection
         public IntegrationProvider $provider,
         public array $employees,
         public array $warnings = [],
+        public int $issuesFetched = 0,
+        public ?string $jql = null,
     ) {}
 
     public function toArray(): array
     {
-        return [
+        $data = [
             'provider' => $this->provider->value,
             'team_summary' => $this->teamSummary(),
             'employees' => array_map(fn (EmployeeWorkProgressDto $e) => $e->toArray(), $this->employees),
             'warnings' => $this->warnings,
         ];
+
+        if ($this->jql !== null) {
+            $data['meta'] = ['jql' => $this->jql];
+        }
+
+        return $data;
     }
 
     public function teamSummary(): array
@@ -40,6 +48,7 @@ readonly class WorkProgressCollection
             'overdue' => $overdue,
             'tasks_open' => $open,
             'contributors' => count($this->employees),
+            'issues_fetched' => $this->issuesFetched,
         ];
     }
 }

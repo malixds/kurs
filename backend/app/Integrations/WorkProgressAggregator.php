@@ -2,12 +2,18 @@
 
 namespace App\Integrations;
 
+use App\Integrations\Support\IntegrationEmployeeMatcher;
+use App\Integrations\Support\ProviderMetricsMerger;
 use App\Models\Employee;
 use App\Models\EmployeeIntegrationIdentity;
 use App\Models\WorkProgressSnapshot;
 
 class WorkProgressAggregator
 {
+    public function __construct(
+        private readonly IntegrationEmployeeMatcher $employeeMatcher,
+        private readonly ProviderMetricsMerger $metricsMerger = new ProviderMetricsMerger,
+    ) {}
     /**
      * @param  array<string, array>  $snapshotsByProvider  slug => payload from snapshot
      */
@@ -20,6 +26,7 @@ class WorkProgressAggregator
         $teamOverdue = 0;
 
         $byEmployeeId = [];
+        $unmappedAssignees = [];
 
         foreach ($snapshotsByProvider as $providerSlug => $payload) {
             foreach ($payload['warnings'] ?? [] as $warning) {
@@ -34,6 +41,19 @@ class WorkProgressAggregator
 
                 if ($employeeId === null) {
                     $warnings[] = "Нет маппинга для {$row['display_name']} ({$providerSlug}).";
+                    $unmappedAssignees[] = [
+                        'provider' => $providerSlug,
+                        'display_name' => $row['display_name'] ?? null,
+                        'external_email' => $row['external_email'] ?? null,
+                        'tasks_closed' => $row['tasks_closed'] ?? 0,
+                        'tasks_created' => $row['tasks_created'] ?? 0,
+                        'overdue_count' => $row['overdue_count'] ?? 0,
+                        'tasks_open_at_period_end' => $row['tasks_open_at_period_end'] ?? 0,
+                        'overdue_issues' => $row['overdue_issues'] ?? [],
+                        'open_issues' => $row['open_issues'] ?? [],
+                        'closed_issues' => $row['closed_issues'] ?? [],
+                        'by_status' => $row['by_status'] ?? [],
+                    ];
 
                     continue;
                 }
@@ -49,15 +69,24 @@ class WorkProgressAggregator
                     ];
                 }
 
-                $byEmployeeId[$employeeId]['providers'][$providerSlug] = [
+                $incoming = [
                     'tasks_closed' => $row['tasks_closed'] ?? 0,
                     'tasks_created' => $row['tasks_created'] ?? 0,
                     'tasks_updated' => $row['tasks_updated'] ?? 0,
                     'tasks_open_at_period_end' => $row['tasks_open_at_period_end'] ?? 0,
                     'overdue_count' => $row['overdue_count'] ?? 0,
+                    'avg_resolution_days' => $row['avg_resolution_days'] ?? null,
                     'by_status' => $row['by_status'] ?? [],
                     'sample_issues' => $row['sample_issues'] ?? [],
+                    'closed_issues' => $row['closed_issues'] ?? [],
+                    'open_issues' => $row['open_issues'] ?? [],
+                    'overdue_issues' => $row['overdue_issues'] ?? [],
                 ];
+
+                $existing = $byEmployeeId[$employeeId]['providers'][$providerSlug] ?? null;
+                $byEmployeeId[$employeeId]['providers'][$providerSlug] = $existing !== null
+                    ? $this->metricsMerger->merge($existing, $incoming)
+                    : $incoming;
             }
         }
 
@@ -68,6 +97,7 @@ class WorkProgressAggregator
                 'overdue' => $teamOverdue,
             ],
             'employees' => array_values($byEmployeeId),
+            'unmapped_assignees' => $unmappedAssignees,
             'warnings' => array_values(array_unique($warnings)),
         ];
     }
@@ -107,12 +137,13 @@ class WorkProgressAggregator
             }
         }
 
-        if (! empty($row['external_email'])) {
-            $match = $employees->first(fn (Employee $e) => strcasecmp($e->email ?? '', $row['external_email']) === 0);
+        $match = $this->employeeMatcher->find(
+            $employees,
+            $row['external_email'] ?? null,
+            $row['display_name'] ?? null,
+            $row['assignee_key'] ?? null,
+        );
 
-            return $match?->id;
-        }
-
-        return null;
+        return $match?->id;
     }
 }

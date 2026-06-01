@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\GracefulEncryptedArray;
 use App\Integrations\Enums\IntegrationStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -22,7 +23,7 @@ class CompanyIntegration extends Model
     protected function casts(): array
     {
         return [
-            'credentials' => 'encrypted:array',
+            'credentials' => GracefulEncryptedArray::class,
             'settings' => 'array',
             'status' => IntegrationStatus::class,
             'last_sync_at' => 'datetime',
@@ -46,6 +47,15 @@ class CompanyIntegration extends Model
 
     public function isConnected(): bool
     {
-        return $this->status === IntegrationStatus::Connected;
+        return $this->status === IntegrationStatus::Connected
+            && ! $this->hasStaleEncryptedCredentials();
+    }
+
+    /** Данные зашифрованы другим APP_KEY — нужно пересохранить токены. */
+    public function hasStaleEncryptedCredentials(): bool
+    {
+        $raw = $this->getRawOriginal('credentials');
+
+        return is_string($raw) && $raw !== '' && $this->credentials === null;
     }
 }

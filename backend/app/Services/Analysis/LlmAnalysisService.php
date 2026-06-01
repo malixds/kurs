@@ -21,11 +21,14 @@ class LlmAnalysisService
         return $this->requestLlm(
             $systemPrompt,
             "Объединённые данные для глубокого анализа (JSON):\n\n"
-            .json_encode($combinedPayload, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT),
+            .json_encode($combinedPayload, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
+            ."\n\nГлавный источник для выводов — employee_delivery_matrix. "
+            .'В каждой рекомендации укажи конкретные цифры и ключи задач из этого блока.',
+            deepAnalysis: true,
         );
     }
 
-    private function requestLlm(string $systemPrompt, string $userMessage): string
+    private function requestLlm(string $systemPrompt, string $userMessage, bool $deepAnalysis = false): string
     {
         $apiKey = config('llm.openai.api_key');
 
@@ -43,7 +46,7 @@ class LlmAnalysisService
                 'max_tokens' => config('llm.openai.max_tokens'),
                 'temperature' => 0.2,
                 'messages' => [
-                    ['role' => 'system', 'content' => $this->buildSystemPrompt($systemPrompt)],
+                    ['role' => 'system', 'content' => $this->buildSystemPrompt($systemPrompt, $deepAnalysis)],
                     [
                         'role' => 'user',
                         'content' => $userMessage."\n\nОтветь только нумерованным списком рекомендаций на русском.",
@@ -66,9 +69,10 @@ class LlmAnalysisService
         return $this->normalizeRecommendation(trim($content));
     }
 
-    private function buildSystemPrompt(string $rolePrompt): string
+    private function buildSystemPrompt(string $rolePrompt, bool $deepAnalysis = false): string
     {
-        $constraints = config('llm.output_constraints');
+        $key = $deepAnalysis ? 'llm.deep_analysis_output_constraints' : 'llm.output_constraints';
+        $constraints = config($key);
 
         if (! is_string($constraints) || trim($constraints) === '') {
             return $rolePrompt;

@@ -38,6 +38,11 @@ class IssueProgressAggregator
                 'overdue' => 0,
                 'by_status' => [],
                 'sample_issues' => [],
+                'closed_issues' => [],
+                'open_issues' => [],
+                'overdue_issues' => [],
+                'resolution_days_sum' => 0,
+                'resolution_count' => 0,
             ];
         }
 
@@ -45,7 +50,7 @@ class IssueProgressAggregator
         $statusKey = $status ?? 'unknown';
         $row['by_status'][$statusKey] = ($row['by_status'][$statusKey] ?? 0) + 1;
 
-        if (count($row['sample_issues']) < 5) {
+        if (count($row['sample_issues']) < 8) {
             $row['sample_issues'][] = $issueKey;
         }
 
@@ -57,14 +62,24 @@ class IssueProgressAggregator
             $row['tasks_updated']++;
         }
 
-        if ($resolvedAt && $resolvedAt->between($periodFrom, $periodTo)) {
+        $isResolvedInPeriod = $resolvedAt && $resolvedAt->between($periodFrom, $periodTo);
+
+        if ($isResolvedInPeriod) {
             $row['tasks_closed']++;
+            $this->pushIssueKey($row, 'closed_issues', $issueKey, 15);
+
+            if ($createdAt) {
+                $row['resolution_days_sum'] += max(0, $createdAt->diffInDays($resolvedAt));
+                $row['resolution_count']++;
+            }
         } elseif (! $resolvedAt && $updatedAt && $updatedAt->lte($periodTo)) {
             $row['tasks_open']++;
+            $this->pushIssueKey($row, 'open_issues', $issueKey, 15);
         }
 
         if ($dueAt && $dueAt->lt(now()) && ! $resolvedAt) {
             $row['overdue']++;
+            $this->pushIssueKey($row, 'overdue_issues', $issueKey, 20);
         }
     }
 
@@ -72,6 +87,11 @@ class IssueProgressAggregator
     public function toDtos(): array
     {
         return collect($this->byAssignee)->map(function (array $row, string $key) {
+            $avgResolution = null;
+            if (($row['resolution_count'] ?? 0) > 0) {
+                $avgResolution = round($row['resolution_days_sum'] / $row['resolution_count'], 1);
+            }
+
             return new EmployeeWorkProgressDto(
                 assigneeKey: $key,
                 displayName: $row['display_name'],
@@ -81,9 +101,23 @@ class IssueProgressAggregator
                 tasksUpdated: $row['tasks_updated'],
                 tasksOpenAtPeriodEnd: $row['tasks_open'],
                 overdueCount: $row['overdue'],
+                avgDaysInProgress: $avgResolution,
                 byStatus: $row['by_status'],
                 sampleIssues: $row['sample_issues'],
+                closedIssues: $row['closed_issues'] ?? [],
+                openIssues: $row['open_issues'] ?? [],
+                overdueIssues: $row['overdue_issues'] ?? [],
             );
         })->values()->all();
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     */
+    private function pushIssueKey(array &$row, string $field, string $issueKey, int $max): void
+    {
+        if (! in_array($issueKey, $row[$field], true) && count($row[$field]) < $max) {
+            $row[$field][] = $issueKey;
+        }
     }
 }

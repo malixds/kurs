@@ -42,6 +42,12 @@
                                 <span class="text-slate-500">Не подключено</span>
                             @endif
                         </p>
+                        @if ($integration?->hasStaleEncryptedCredentials())
+                            <p class="mt-2 text-sm text-amber-300">
+                                Не удалось прочитать сохранённые токены (часто после смены <code class="text-amber-200">APP_KEY</code>).
+                                Введите API token заново и нажмите «Сохранить».
+                            </p>
+                        @endif
                         @if ($integration?->last_error)
                             <p class="mt-2 text-sm text-red-400">{{ $integration->last_error }}</p>
                         @endif

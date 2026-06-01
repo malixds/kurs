@@ -13,6 +13,12 @@
             @endif
             wellbeing + прогресс задач из трекеров → рекомендации LLM
         </p>
+        <ol class="mt-3 list-inside list-decimal text-sm text-slate-400">
+            <li><strong class="font-medium text-slate-300">Синхронизировать</strong> — загрузить задачи из Jira в базу</li>
+            <li><strong class="font-medium text-slate-300">Данные трекера</strong> — посмотреть снимок (без LLM)</li>
+            <li><strong class="font-medium text-slate-300">JSON для LLM</strong> — wellbeing + work_progress целиком</li>
+            <li><strong class="font-medium text-slate-300">Рекомендации</strong> — отправить JSON в LLM</li>
+        </ol>
         <p class="mt-2 text-sm">
             <a href="{{ route('dashboard.integrations') }}" class="text-indigo-400 hover:text-indigo-300">Настроить интеграции →</a>
         </p>
@@ -85,21 +91,37 @@
             <div class="mt-5 flex flex-wrap gap-3">
                 <button type="button" id="btn-sync"
                         class="rounded-lg border border-slate-600 px-4 py-2 text-sm hover:bg-slate-800">
-                    Синхронизировать трекеры
+                    1. Синхронизировать трекеры
+                </button>
+                <button type="button" id="btn-trackers"
+                        class="rounded-lg border border-emerald-700/60 px-4 py-2 text-sm text-emerald-100 hover:bg-emerald-950/40">
+                    2. Данные трекера
                 </button>
                 <button type="button" id="btn-export"
                         class="rounded-lg border border-slate-600 px-4 py-2 text-sm hover:bg-slate-800">
-                    Показать JSON данных
+                    3. JSON для LLM
                 </button>
                 <button type="button" id="btn-recommend"
                         class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold hover:bg-indigo-500">
-                    Получить рекомендации
+                    4. Получить рекомендации (LLM)
                 </button>
             </div>
         </section>
 
         <section class="space-y-4">
             <div id="status" class="hidden rounded-xl border px-4 py-3 text-sm"></div>
+            <div id="tracker-panel" class="hidden rounded-2xl border border-emerald-800/40 bg-slate-900 p-6">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <h2 class="text-lg font-medium text-emerald-200">Данные трекера</h2>
+                        <p id="tracker-llm-note" class="mt-1 text-xs text-slate-500"></p>
+                    </div>
+                    <button type="button" id="btn-hide-trackers" class="rounded-lg border border-slate-600 px-3 py-1.5 text-xs hover:bg-slate-800">Скрыть</button>
+                </div>
+                <div id="tracker-summary" class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3"></div>
+                <p id="tracker-warnings" class="mt-3 hidden text-sm text-amber-300/90"></p>
+                <pre id="tracker-json" class="mt-4 max-h-80 overflow-auto rounded-xl bg-slate-950 p-4 text-xs text-emerald-100"></pre>
+            </div>
             <div id="recommendation-panel" class="hidden rounded-2xl border border-indigo-500/30 bg-slate-900 p-6">
                 <h2 class="text-lg font-medium text-indigo-200">Рекомендации</h2>
                 <div id="recommendation-meta" class="mt-1 text-xs text-slate-500"></div>
@@ -107,8 +129,12 @@
             </div>
             <div id="json-panel" class="hidden rounded-2xl border border-slate-800 bg-slate-900 p-6">
                 <div class="flex flex-wrap items-center justify-between gap-3">
-                    <h2 class="text-lg font-medium">JSON для LLM</h2>
+                    <div>
+                        <h2 class="text-lg font-medium">JSON для LLM (сжатый)</h2>
+                        <p class="mt-1 text-xs text-slate-500">employee_delivery_matrix + сводки — то же, что уходит в LLM на шаге 4</p>
+                    </div>
                     <div class="flex gap-2">
+                        <button type="button" id="btn-export-full" class="rounded-lg border border-slate-600 px-3 py-1.5 text-xs hover:bg-slate-800">Полный JSON</button>
                         <button type="button" id="btn-copy-json" class="rounded-lg border border-slate-600 px-3 py-1.5 text-xs hover:bg-slate-800">Копировать</button>
                         <button type="button" id="btn-hide-json" class="rounded-lg border border-slate-600 px-3 py-1.5 text-xs hover:bg-slate-800">Скрыть</button>
                     </div>
@@ -134,6 +160,8 @@
         const jsonPanel = document.getElementById('json-panel');
         const jsonOutput = document.getElementById('json-output');
         const btnExport = document.getElementById('btn-export');
+        const btnTrackers = document.getElementById('btn-trackers');
+        const trackerPanel = document.getElementById('tracker-panel');
         const csrf = document.querySelector('input[name="_token"]')?.value;
 
         function selectedProviders() {
@@ -166,6 +194,48 @@
             statusEl.textContent = msg;
         }
 
+        function formatSyncSummary(summary) {
+            if (!summary || Object.keys(summary).length === 0) return '';
+            return Object.entries(summary).map(([slug, s]) =>
+                `${slug}: ${s.issues_fetched ?? 0} задач, ${s.contributors} исп., закрыто ${s.tasks_closed}`
+            ).join(' · ');
+        }
+
+        function renderTrackerPanel(data) {
+            const note = data.llm_usage?.description ?? '';
+            document.getElementById('tracker-llm-note').textContent = note;
+            const summaryEl = document.getElementById('tracker-summary');
+            const wp = data.work_progress ?? {};
+            const team = wp.team_summary ?? {};
+            const jiraRaw = data.by_provider?.jira?.raw ?? {};
+            const cards = [
+                { label: 'Источники', value: (wp.sources ?? []).join(', ') || '—' },
+                { label: 'Задач загружено из Jira', value: team.issues_fetched ?? jiraRaw.team_summary?.issues_fetched ?? '—' },
+                { label: 'Закрыто / просрочено', value: `${team.tasks_closed ?? 0} / ${team.overdue ?? 0}` },
+                { label: 'Исполнителей в снимке', value: (wp.employees ?? []).length },
+                { label: 'Снимок в БД', value: data.has_data ? 'да' : 'нет' },
+            ];
+            if (jiraRaw.meta?.jql) {
+                cards.push({ label: 'JQL', value: jiraRaw.meta.jql });
+            }
+            summaryEl.innerHTML = cards.map((c) =>
+                `<div class="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3">
+                    <div class="text-xs text-slate-500">${c.label}</div>
+                    <div class="mt-1 text-lg font-semibold text-white">${c.value}</div>
+                </div>`
+            ).join('');
+            const warnEl = document.getElementById('tracker-warnings');
+            const warnings = data.integration_warnings ?? [];
+            if (warnings.length) {
+                warnEl.textContent = warnings.join(' ');
+                warnEl.classList.remove('hidden');
+            } else {
+                warnEl.classList.add('hidden');
+            }
+            document.getElementById('tracker-json').textContent = JSON.stringify(data, null, 2);
+            trackerPanel.classList.remove('hidden');
+        }
+
         document.getElementById('btn-sync').addEventListener('click', async () => {
             showStatus('Синхронизация с трекерами…', 'loading');
             try {
@@ -176,28 +246,61 @@
                 });
                 const p = await r.json();
                 if (!r.ok && r.status !== 207) throw new Error(p.message ?? 'Ошибка');
-                showStatus(p.message + (p.data?.errors?.length ? ': ' + p.data.errors.join('; ') : ''), r.ok ? 'success' : 'error');
+                const extra = formatSyncSummary(p.data?.summary);
+                showStatus(p.message + (extra ? ' — ' + extra : '') + (p.data?.errors?.length ? ' · ' + p.data.errors.join('; ') : ''), r.ok ? 'success' : 'error');
             } catch (e) { showStatus(e.message, 'error'); }
+        });
+
+        btnTrackers.addEventListener('click', async () => {
+            if (!trackerPanel.classList.contains('hidden')) {
+                trackerPanel.classList.add('hidden');
+                btnTrackers.textContent = '2. Данные трекера';
+                return;
+            }
+            showStatus('Загрузка данных трекера…', 'loading');
+            try {
+                const q = new URLSearchParams({ from: dateFrom.value, to: dateTo.value });
+                selectedProviders().forEach((p) => q.append('providers[]', p));
+                const r = await fetch(`{{ route('dashboard.deep-analysis.trackers') }}?${q}`);
+                const p = await r.json();
+                if (!r.ok) throw new Error(p.message ?? 'Ошибка');
+                renderTrackerPanel(p.data);
+                btnTrackers.textContent = 'Скрыть данные трекера';
+                showStatus(p.data.has_data ? 'Данные трекера загружены (LLM не вызывался).' : 'Нет снимка — сначала синхронизируйте трекеры.', p.data.has_data ? 'success' : 'error');
+            } catch (e) { showStatus(e.message, 'error'); }
+        });
+
+        document.getElementById('btn-hide-trackers').addEventListener('click', () => {
+            trackerPanel.classList.add('hidden');
+            btnTrackers.textContent = '2. Данные трекера';
         });
 
         function setJsonVisible(v) {
             jsonPanel.classList.toggle('hidden', !v);
-            btnExport.textContent = v ? 'Скрыть JSON' : 'Показать JSON данных';
+            btnExport.textContent = v ? 'Скрыть JSON' : '3. JSON для LLM';
+        }
+
+        async function loadPreviewJson(full = false) {
+            showStatus('Загрузка…', 'loading');
+            const q = new URLSearchParams({ from: dateFrom.value, to: dateTo.value, prompt: promptInput.value });
+            if (full) q.set('full', '1');
+            selectedProviders().forEach((p) => q.append('providers[]', p));
+            const r = await fetch(`{{ route('dashboard.deep-analysis.preview') }}?${q}`);
+            const p = await r.json();
+            if (!r.ok) throw new Error(p.message ?? 'Ошибка');
+            const payload = full && p.data_full ? p.data_full : p.data;
+            jsonOutput.textContent = JSON.stringify(payload, null, 2);
+            setJsonVisible(true);
+            showStatus(full ? 'Полный экспорт (отладка).' : 'Сжатый JSON для LLM загружен.', 'success');
         }
 
         btnExport.addEventListener('click', async () => {
             if (!jsonPanel.classList.contains('hidden')) { setJsonVisible(false); return; }
-            showStatus('Загрузка…', 'loading');
-            try {
-                const q = new URLSearchParams({ from: dateFrom.value, to: dateTo.value, prompt: promptInput.value });
-                selectedProviders().forEach((p) => q.append('providers[]', p));
-                const r = await fetch(`{{ route('dashboard.deep-analysis.preview') }}?${q}`);
-                const p = await r.json();
-                if (!r.ok) throw new Error(p.message ?? 'Ошибка');
-                jsonOutput.textContent = JSON.stringify(p.data, null, 2);
-                setJsonVisible(true);
-                showStatus('Данные загружены.', 'success');
-            } catch (e) { showStatus(e.message, 'error'); }
+            try { await loadPreviewJson(false); } catch (e) { showStatus(e.message, 'error'); }
+        });
+
+        document.getElementById('btn-export-full').addEventListener('click', async () => {
+            try { await loadPreviewJson(true); } catch (e) { showStatus(e.message, 'error'); }
         });
 
         document.getElementById('btn-hide-json').addEventListener('click', () => setJsonVisible(false));

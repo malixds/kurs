@@ -9,6 +9,8 @@ services:
     volumes:
       - ./backend:/var/www/backend
       - wellbeing_vendor:/var/www/backend/vendor
+    env_file:
+      - ./backend/.env
     environment:
       APP_ENV: ${APP_ENV:-local}
       APP_DEBUG: ${APP_DEBUG:-true}

@@ -59,6 +59,8 @@ Route::middleware(['auth', 'company'])->group(function (): void {
         ->name('dashboard.deep-analysis');
     Route::post('/dashboard/deep-analysis/sync', [DeepAnalysisController::class, 'sync'])
         ->name('dashboard.deep-analysis.sync');
+    Route::get('/dashboard/deep-analysis/trackers', [DeepAnalysisController::class, 'trackers'])
+        ->name('dashboard.deep-analysis.trackers');
     Route::get('/dashboard/deep-analysis/preview', [DeepAnalysisController::class, 'preview'])
         ->name('dashboard.deep-analysis.preview');
     Route::post('/dashboard/deep-analysis/recommend', [DeepAnalysisController::class, 'recommend'])

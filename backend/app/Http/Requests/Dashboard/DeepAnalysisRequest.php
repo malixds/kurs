@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Dashboard;
 
-use Illuminate\Foundation\Http\FormRequest;
+use App\Support\DeepAnalysisPromptCatalog;
 use Illuminate\Validation\Rule;
 
 class DeepAnalysisRequest extends AnalysisPeriodRequest
@@ -13,6 +13,8 @@ class DeepAnalysisRequest extends AnalysisPeriodRequest
             'providers' => ['nullable', 'array'],
             'providers.*' => ['string', Rule::in(array_keys(config('integrations.providers', [])))],
             'sync_first' => ['nullable', 'boolean'],
+            // Глубокий анализ использует deep_analysis_prompts, не analysis_prompts.
+            'prompt' => ['nullable', 'string', Rule::in(array_keys(DeepAnalysisPromptCatalog::all()))],
         ]);
     }
 }

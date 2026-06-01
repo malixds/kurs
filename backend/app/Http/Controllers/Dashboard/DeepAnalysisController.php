@@ -8,6 +8,7 @@ use App\Http\Requests\Dashboard\DeepAnalysisRequest;
 use App\Integrations\IntegrationManager;
 use App\Integrations\WorkProgressAggregator;
 use App\Services\Analysis\DeepAnalysisExportService;
+use App\Services\Analysis\DeepAnalysisLlmPayloadBuilder;
 use App\Services\Analysis\LlmAnalysisService;
 use App\Services\Billing\PlanLimitService;
 use App\Services\Company\ActiveCompanyService;
@@ -27,6 +28,7 @@ class DeepAnalysisController extends Controller
         private readonly IntegrationManager $integrationManager,
         private readonly WorkProgressAggregator $workProgressAggregator,
         private readonly DeepAnalysisExportService $exportService,
+        private readonly DeepAnalysisLlmPayloadBuilder $llmPayloadBuilder,
         private readonly LlmAnalysisService $llmService,
         private readonly PlanLimitService $planLimitService,
     ) {}
@@ -61,11 +63,27 @@ class DeepAnalysisController extends Controller
         $result = $this->integrationManager->syncWorkProgress($companyId, $from, $to, $providers);
 
         return response()->json([
-            'data' => $result,
+            'data' => array_merge($result, [
+                'summary' => $this->summarizeSyncResults($result['results'] ?? []),
+            ]),
             'message' => $result['errors'] === []
                 ? 'Данные синхронизированы.'
                 : 'Синхронизация завершена с предупреждениями.',
         ], $result['errors'] === [] ? 200 : 207);
+    }
+
+    public function trackers(DeepAnalysisRequest $request): JsonResponse
+    {
+        [$from, $to] = $this->resolvePeriod($request);
+        $companyId = $this->activeCompanyService->resolve($request->user());
+        abort_if($companyId === null, 403);
+
+        $providers = $request->input('providers', []);
+
+        return response()->json([
+            'data' => $this->exportService->exportTrackers($companyId, $from, $to, $providers),
+            'message' => 'Данные трекеров за период (без вызова LLM).',
+        ]);
     }
 
     public function preview(DeepAnalysisRequest $request): JsonResponse
@@ -76,9 +94,22 @@ class DeepAnalysisController extends Controller
 
         $providers = $request->input('providers', []);
 
-        return response()->json([
-            'data' => $this->exportService->build($companyId, $from, $to, $providers),
-        ]);
+        $full = $this->exportService->build($companyId, $from, $to, $providers);
+        $llm = $this->llmPayloadBuilder->fromExport($full);
+
+        $response = [
+            'data' => $llm,
+            'meta' => [
+                'format' => 'llm_compact',
+                'note' => 'Тот же JSON, что отправляется в LLM на шаге 4. Добавьте ?full=1 для полного экспорта (wellbeing + work_progress).',
+            ],
+        ];
+
+        if ($request->boolean('full')) {
+            $response['data_full'] = $full;
+        }
+
+        return response()->json($response);
     }
 
     public function recommend(DeepAnalysisRequest $request): JsonResponse
@@ -108,7 +139,8 @@ class DeepAnalysisController extends Controller
             ], 422);
         }
 
-        $recommendation = $this->llmService->analyzeCombined($promptConfig['system'], $payload);
+        $llmPayload = $this->llmPayloadBuilder->fromExport($payload);
+        $recommendation = $this->llmService->analyzeCombined($promptConfig['system'], $llmPayload);
 
         return response()->json([
             'data' => [
@@ -119,6 +151,28 @@ class DeepAnalysisController extends Controller
                 'recommendation' => $recommendation,
             ],
         ]);
+    }
+
+    /**
+     * @param  array<string, array>  $results
+     * @return array<string, array{contributors: int, tasks_closed: int, overdue: int, warnings: int}>
+     */
+    private function summarizeSyncResults(array $results): array
+    {
+        $summary = [];
+
+        foreach ($results as $slug => $payload) {
+            $team = $payload['team_summary'] ?? [];
+            $summary[$slug] = [
+                'contributors' => (int) ($team['contributors'] ?? count($payload['employees'] ?? [])),
+                'issues_fetched' => (int) ($team['issues_fetched'] ?? 0),
+                'tasks_closed' => (int) ($team['tasks_closed'] ?? 0),
+                'overdue' => (int) ($team['overdue'] ?? 0),
+                'warnings' => count($payload['warnings'] ?? []),
+            ];
+        }
+
+        return $summary;
     }
 
     private function resolvePeriod(AnalysisPeriodRequest $request): array

@@ -16,6 +16,9 @@ readonly class EmployeeWorkProgressDto
         public ?float $avgDaysInProgress = null,
         public array $byStatus = [],
         public array $sampleIssues = [],
+        public array $closedIssues = [],
+        public array $openIssues = [],
+        public array $overdueIssues = [],
     ) {}
 
     public function toArray(): array
@@ -29,9 +32,12 @@ readonly class EmployeeWorkProgressDto
             'tasks_updated' => $this->tasksUpdated,
             'tasks_open_at_period_end' => $this->tasksOpenAtPeriodEnd,
             'overdue_count' => $this->overdueCount,
-            'avg_days_in_progress' => $this->avgDaysInProgress,
+            'avg_resolution_days' => $this->avgDaysInProgress,
             'by_status' => $this->byStatus,
             'sample_issues' => $this->sampleIssues,
+            'closed_issues' => $this->closedIssues,
+            'open_issues' => $this->openIssues,
+            'overdue_issues' => $this->overdueIssues,
         ];
     }
 }

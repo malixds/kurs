@@ -4,6 +4,7 @@ namespace App\Integrations;
 
 use App\Integrations\DTO\WorkProgressRequest;
 use App\Integrations\Enums\IntegrationStatus;
+use App\Integrations\Support\IntegrationEmployeeMatcher;
 use App\Models\Company;
 use App\Models\CompanyIntegration;
 use App\Models\Employee;
@@ -18,6 +19,7 @@ class IntegrationManager
 {
     public function __construct(
         private readonly IntegrationRegistry $registry,
+        private readonly IntegrationEmployeeMatcher $employeeMatcher,
     ) {}
 
     public function providersForUi(): array
@@ -172,11 +174,12 @@ class IntegrationManager
         $employees = Employee::query()->where('company_id', $companyId)->get();
 
         foreach ($employeeDtos as $dto) {
-            $employee = null;
-
-            if ($dto->externalEmail) {
-                $employee = $employees->first(fn (Employee $e) => strcasecmp($e->email ?? '', $dto->externalEmail) === 0);
-            }
+            $employee = $this->employeeMatcher->find(
+                $employees,
+                $dto->externalEmail,
+                $dto->displayName,
+                $dto->assigneeKey,
+            );
 
             if ($employee === null) {
                 continue;
