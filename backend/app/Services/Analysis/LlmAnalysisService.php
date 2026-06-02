@@ -11,8 +11,10 @@ class LlmAnalysisService
     {
         return $this->requestLlm(
             $systemPrompt,
-            "Данные check-in сотрудников (JSON):\n\n"
-            .json_encode($responsesPayload, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT),
+            "Сводка wellbeing по сотрудникам (JSON). Используй ТОЛЬКО employee_wellbeing_summary:\n\n"
+            .json_encode($responsesPayload, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
+            ."\n\nВ каждом пункте ответа укажи name из summary и цифры (avg_mood / avg_stress / team_support_yes_rate). "
+            .'Не пиши «сотрудник» или «двое» без конкретного name.',
         );
     }
 
@@ -22,8 +24,9 @@ class LlmAnalysisService
             $systemPrompt,
             "Объединённые данные для глубокого анализа (JSON):\n\n"
             .json_encode($combinedPayload, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
-            ."\n\nГлавный источник для выводов — employee_delivery_matrix. "
-            .'В каждой рекомендации укажи конкретные цифры и ключи задач из этого блока.',
+            ."\n\nГлавный источник — employee_delivery_matrix. "
+            .'В каждой рекомендации: поле name (как в JSON), цифры wellbeing/tasks, ключи overdue_issues. '
+            .'Запрещены формулировки без имени («сотрудник с низким настроением»).',
             deepAnalysis: true,
         );
     }
@@ -60,10 +63,17 @@ class LlmAnalysisService
             throw new RuntimeException('Ошибка LLM API: '.$error);
         }
 
-        $content = $response->json('choices.0.message.content');
+        $content = $this->extractContent($response->json());
 
         if (! is_string($content) || trim($content) === '') {
-            throw new RuntimeException('LLM вернул пустой ответ.');
+            $body = $response->json();
+            $bodyPreview = is_array($body)
+                ? mb_substr(json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '', 0, 600)
+                : mb_substr((string) $response->body(), 0, 600);
+
+            throw new RuntimeException(
+                'LLM вернул пустой ответ. Проверьте OPENAI_MODEL или формат ответа провайдера. Body: '.$bodyPreview,
+            );
         }
 
         return $this->normalizeRecommendation(trim($content));
@@ -79,6 +89,40 @@ class LlmAnalysisService
         }
 
         return trim($rolePrompt)."\n\n".trim($constraints);
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $json
+     */
+    private function extractContent(?array $json): ?string
+    {
+        if (! is_array($json)) {
+            return null;
+        }
+
+        $content = $json['choices'][0]['message']['content'] ?? null;
+        if (is_string($content) && trim($content) !== '') {
+            return $content;
+        }
+
+        // Some OpenAI-compatible providers return content as parts array.
+        if (is_array($content)) {
+            $parts = collect($content)
+                ->map(fn ($part) => is_array($part) ? ($part['text'] ?? null) : null)
+                ->filter(fn ($part) => is_string($part) && trim($part) !== '')
+                ->implode("\n");
+
+            if ($parts !== '') {
+                return $parts;
+            }
+        }
+
+        $text = $json['choices'][0]['text'] ?? $json['output_text'] ?? null;
+        if (is_string($text) && trim($text) !== '') {
+            return $text;
+        }
+
+        return null;
     }
 
     private function normalizeRecommendation(string $content): string

@@ -318,7 +318,7 @@
                 const r = await fetch('{{ route('dashboard.deep-analysis.recommend') }}', {
                     method: 'POST',
                     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
-                    body: JSON.stringify({ ...body(), sync_first: true }),
+                    body: JSON.stringify({ ...body(), sync_first: false }),
                 });
                 const p = await r.json();
                 if (!r.ok) throw new Error(p.message ?? 'Ошибка');

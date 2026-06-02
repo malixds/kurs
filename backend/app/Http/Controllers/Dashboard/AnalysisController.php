@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Dashboard\AnalysisPeriodRequest;
 use App\Services\Analysis\EmployeeResponsesExportService;
 use App\Services\Analysis\LlmAnalysisService;
+use App\Services\Analysis\WellbeingLlmPayloadBuilder;
 use App\Services\Company\ActiveCompanyService;
 use App\Support\AnalysisPeriodResolver;
 use App\Support\AnalysisPromptCatalog;
@@ -22,6 +23,7 @@ class AnalysisController extends Controller
         private readonly ActiveCompanyService $activeCompanyService,
         private readonly EmployeeResponsesExportService $exportService,
         private readonly LlmAnalysisService $llmService,
+        private readonly WellbeingLlmPayloadBuilder $wellbeingLlmPayloadBuilder,
     ) {}
 
     public function index(Request $request): View
@@ -80,7 +82,8 @@ class AnalysisController extends Controller
             ], 422);
         }
 
-        $recommendation = $this->llmService->analyze($promptConfig['system'], $payload);
+        $llmPayload = $this->wellbeingLlmPayloadBuilder->fromExport($payload);
+        $recommendation = $this->llmService->analyze($promptConfig['system'], $llmPayload);
 
         return response()->json([
             'data' => [

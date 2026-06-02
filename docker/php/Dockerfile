@@ -28,6 +28,7 @@ RUN apk add --no-cache \
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/99-wellbeing.ini
+COPY docker/php/zz-fpm-timeouts.conf /usr/local/etc/php-fpm.d/zz-fpm-timeouts.conf
 COPY docker/php/php-fpm-healthcheck /usr/local/bin/php-fpm-healthcheck
 COPY docker/php/entrypoint.sh /usr/local/bin/entrypoint.sh
 
