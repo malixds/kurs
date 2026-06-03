@@ -7,7 +7,7 @@
 
     <div class="mb-8">
         <h1 class="text-3xl font-semibold">AI-анализ wellbeing</h1>
-        <p class="mt-1 text-slate-400">
+        <p class="mt-1 ds-text-secondary">
             @if ($activeCompany ?? null)
                 {{ $activeCompany->name }} —
             @endif
@@ -20,127 +20,116 @@
         <input type="hidden" name="prompt" id="prompt" value="{{ $defaultPrompt }}">
 
         <section>
-            <h2 class="text-sm font-medium uppercase tracking-wider text-slate-500">Сценарий анализа</h2>
-            <p class="mt-1 text-sm text-slate-400">Выберите одну из ролей — от неё зависит фокус рекомендаций LLM.</p>
+            <h2 class="text-sm font-medium uppercase tracking-wider ds-text-muted">Сценарий анализа</h2>
+            <p class="mt-1 text-sm ds-text-secondary">Выберите одну из ролей — от неё зависит фокус рекомендаций LLM.</p>
 
             <div class="mt-4 grid gap-4 md:grid-cols-3" id="prompt-cards" role="radiogroup" aria-label="Сценарий анализа">
                 @forelse ($prompts as $prompt)
                     <button type="button"
-                            class="prompt-card group flex h-full flex-col rounded-2xl border border-slate-800 bg-slate-900/60 p-5 text-left transition hover:border-slate-600 hover:bg-slate-900
+                            class="prompt-card group flex h-full flex-col ds-panel p-5 text-left transition hover:border-[rgba(111,99,255,0.25)]
                                    {{ $defaultPrompt === $prompt['id'] ? 'prompt-card--active' : '' }}"
                             data-prompt-id="{{ $prompt['id'] }}"
                             aria-pressed="{{ $defaultPrompt === $prompt['id'] ? 'true' : 'false' }}">
-                        <span class="prompt-card__title text-lg font-semibold text-white group-hover:text-violet-100">
+                        <span class="prompt-card__title text-lg font-semibold text-[#111827] group-hover:text-[#4E44E5]">
                             {{ $prompt['label'] }}
                         </span>
-                        <span class="prompt-card__desc mt-3 text-sm leading-relaxed text-slate-400 group-hover:text-slate-300">
+                        <span class="prompt-card__desc mt-3 text-sm leading-relaxed ds-text-secondary group-hover:text-[#5F6473]">
                             {{ $prompt['description'] }}
                         </span>
                     </button>
                 @empty
-                    <p class="col-span-3 rounded-xl border border-dashed border-slate-700 p-6 text-center text-slate-500">
-                        Сценарии не загружены. Выполните <code class="text-violet-300">php artisan config:clear</code>
+                    <p class="col-span-3 rounded-xl border border-dashed border-black/10 p-6 text-center ds-text-muted">
+                        Сценарии не загружены. Выполните <code class="text-[#6F63FF]">php artisan config:clear</code>
                     </p>
                 @endforelse
             </div>
         </section>
 
         <section>
-            <h2 class="text-sm font-medium uppercase tracking-wider text-slate-500">Период данных</h2>
-            <p class="mt-1 text-sm text-slate-400">Укажите диапазон дат для анализа ответов сотрудников.</p>
+            <h2 class="text-sm font-medium uppercase tracking-wider ds-text-muted">Период данных</h2>
+            <p class="mt-1 text-sm ds-text-secondary">Укажите диапазон дат для анализа ответов сотрудников.</p>
 
-            <div class="mt-4 rounded-2xl border border-slate-800 bg-slate-900 p-5">
+            <div class="mt-4 ds-panel p-5">
                 <div class="flex flex-wrap gap-2">
                     <button type="button" data-preset-days="7"
-                            class="date-preset rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-800">
+                            class="date-preset rounded-lg border border-black/[0.08] px-3 py-1.5 text-xs text-[#5F6473] hover:bg-[#F7F8FC]">
                         7 дней
                     </button>
                     <button type="button" data-preset-days="14"
-                            class="date-preset rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-800">
+                            class="date-preset rounded-lg border border-black/[0.08] px-3 py-1.5 text-xs text-[#5F6473] hover:bg-[#F7F8FC]">
                         14 дней
                     </button>
                     <button type="button" data-preset-days="30"
-                            class="date-preset rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-800">
+                            class="date-preset rounded-lg border border-black/[0.08] px-3 py-1.5 text-xs text-[#5F6473] hover:bg-[#F7F8FC]">
                         30 дней
                     </button>
                 </div>
 
-                <div class="mt-5 flex flex-wrap items-end gap-4">
-                    <div>
-                        <label for="date-from" class="mb-1 block text-xs text-slate-400">С</label>
-                        <input type="date" id="date-from" name="from" value="{{ $defaultFrom }}"
-                               max="{{ $defaultTo }}"
-                               class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white [color-scheme:dark]">
-                    </div>
-                    <div>
-                        <label for="date-to" class="mb-1 block text-xs text-slate-400">По</label>
-                        <input type="date" id="date-to" name="to" value="{{ $defaultTo }}"
-                               max="{{ now()->toDateString() }}"
-                               class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white [color-scheme:dark]">
-                    </div>
+                <div class="mt-5">
+                    @include('dashboard.partials.date-range', [
+                        'fromValue' => $defaultFrom,
+                        'toValue' => $defaultTo,
+                        'fromName' => 'from',
+                        'toName' => 'to',
+                        'fromMax' => $defaultTo,
+                        'toMax' => now()->toDateString(),
+                    ])
                 </div>
-                <p id="date-range-label" class="mt-3 text-sm text-slate-500"></p>
+                <p id="date-range-label" class="mt-3 text-sm ds-text-muted"></p>
             </div>
 
             <div class="mt-5 flex flex-wrap gap-3">
                 <button type="button" id="btn-export"
-                        class="rounded-lg border border-slate-600 px-4 py-2 text-sm hover:bg-slate-800">
+                        class="rounded-lg ds-btn-secondary !min-h-0 !px-4 !py-2 text-sm">
                     Показать JSON данных
                 </button>
                 <button type="button" id="btn-recommend"
-                        class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold hover:bg-indigo-500">
+                        class="rounded-lg ds-btn-primary !min-h-0 !px-4 !py-2 text-sm">
                     Получить рекомендации
                 </button>
             </div>
         </section>
 
         <section class="space-y-4">
-            <div id="status" class="hidden rounded-xl border px-4 py-3 text-sm"></div>
+            <div id="status" class="ds-status hidden" role="status" aria-live="polite"></div>
 
-            <div id="recommendation-panel" class="hidden rounded-2xl border border-indigo-500/30 bg-slate-900 p-6">
-                <h2 class="text-lg font-medium text-indigo-200">Рекомендации</h2>
-                <div id="recommendation-meta" class="mt-1 text-xs text-slate-500"></div>
-                <div id="recommendation-body" class="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-slate-200"></div>
+            <div id="recommendation-panel" class="ds-recommendation-panel hidden">
+                <div class="ds-recommendation-panel__header">
+                    <span class="ds-badge">AI</span>
+                    <h2 class="ds-recommendation-panel__title">Рекомендации</h2>
+                </div>
+                <div id="recommendation-meta" class="ds-recommendation-panel__meta"></div>
+                <p id="recommendation-history" class="mt-1 hidden text-xs">
+                    <a id="recommendation-history-link" href="{{ route('dashboard.recommendations.index') }}"
+                       class="font-medium text-[#6F63FF] hover:underline">Открыть в истории →</a>
+                </p>
+                <div id="recommendation-body" class="ds-recommendation-panel__body"></div>
             </div>
 
-            <div id="json-panel" class="hidden rounded-2xl border border-slate-800 bg-slate-900 p-6">
+            <div id="json-panel" class="hidden ds-panel p-6">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <h2 class="text-lg font-medium">JSON для LLM</h2>
                     <div class="flex gap-2">
                         <button type="button" id="btn-copy-json"
-                                class="rounded-lg border border-slate-600 px-3 py-1.5 text-xs hover:bg-slate-800">
+                                class="rounded-lg ds-btn-secondary !min-h-0 !px-3 !py-1.5 text-xs">
                             Копировать
                         </button>
                         <button type="button" id="btn-hide-json"
-                                class="rounded-lg border border-slate-600 px-3 py-1.5 text-xs hover:bg-slate-800">
+                                class="rounded-lg ds-btn-secondary !min-h-0 !px-3 !py-1.5 text-xs">
                             Скрыть
                         </button>
                     </div>
                 </div>
-                <pre id="json-output" class="mt-4 max-h-[32rem] overflow-auto rounded-xl bg-slate-950 p-4 text-xs text-violet-100"></pre>
+                <pre id="json-output" class="mt-4 max-h-[32rem] overflow-auto rounded-xl bg-[#F7F8FC] p-4 text-xs text-[#4E44E5]"></pre>
             </div>
         </section>
     </form>
 
     <style>
         .date-preset--active {
-            border-color: rgb(99 102 241);
-            background: rgb(99 102 241 / 0.15);
-            color: rgb(199 210 254);
-        }
-
-        .prompt-card--active {
-            border-color: rgb(139 92 246 / 0.7);
-            background: linear-gradient(145deg, rgb(46 16 101 / 0.5), rgb(15 15 30 / 0.9));
-            box-shadow: 0 0 0 1px rgb(139 92 246 / 0.3);
-        }
-
-        .prompt-card--active .prompt-card__title {
-            color: rgb(221 214 254);
-        }
-
-        .prompt-card--active .prompt-card__desc {
-            color: rgb(196 181 253 / 0.85);
+            border-color: rgba(111, 99, 255, 0.45);
+            background: rgba(111, 99, 255, 0.12);
+            color: #4e44e5;
         }
 
         .prompt-card:focus-visible {
@@ -166,11 +155,17 @@
         const recommendationMeta = document.getElementById('recommendation-meta');
         const csrf = document.querySelector('input[name="_token"]')?.value;
 
+        let showStatus = (message, type = 'info') => {
+            statusEl.classList.remove('hidden');
+            statusEl.textContent = message;
+        };
+
         function selectPrompt(promptId) {
             promptInput.value = promptId;
             promptCards.forEach((card) => {
                 const isActive = card.dataset.promptId === promptId;
                 card.classList.toggle('prompt-card--active', isActive);
+                card.classList.toggle('ds-prompt-card--active', isActive);
                 card.setAttribute('aria-pressed', isActive ? 'true' : 'false');
             });
         }
@@ -198,6 +193,7 @@
         function updateDateConstraints() {
             if (dateFrom.value > dateTo.value) {
                 dateTo.value = dateFrom.value;
+                dateTo.dispatchEvent(new Event('change', { bubbles: true }));
             }
             dateTo.min = dateFrom.value;
             dateFrom.max = dateTo.value;
@@ -232,7 +228,7 @@
             from.setDate(from.getDate() - (days - 1));
             dateTo.value = to.toISOString().slice(0, 10);
             dateFrom.value = from.toISOString().slice(0, 10);
-            updateDateConstraints();
+            dateFrom.dispatchEvent(new Event('change', { bubbles: true }));
         }
 
         dateFrom.addEventListener('change', updateDateConstraints);
@@ -252,18 +248,13 @@
             }
         }
 
-        function showStatus(message, type = 'info') {
-            statusEl.classList.remove('hidden', 'border-red-800', 'bg-red-950/40', 'text-red-200', 'border-indigo-800', 'bg-indigo-950/40', 'text-indigo-200', 'border-emerald-800', 'bg-emerald-950/30', 'text-emerald-200', 'border-slate-700', 'bg-slate-800/40', 'text-slate-300');
-            if (type === 'error') {
-                statusEl.classList.add('border-red-800', 'bg-red-950/40', 'text-red-200');
-            } else if (type === 'loading') {
-                statusEl.classList.add('border-indigo-800', 'bg-indigo-950/40', 'text-indigo-200');
-            } else if (type === 'success') {
-                statusEl.classList.add('border-emerald-800', 'bg-emerald-950/30', 'text-emerald-200');
-            } else {
-                statusEl.classList.add('border-slate-700', 'bg-slate-800/40', 'text-slate-300');
+        function renderRecommendationText(el, text) {
+            if (window.DsDashboard?.renderRecommendation) {
+                window.DsDashboard.renderRecommendation(el, text);
+                return;
             }
-            statusEl.textContent = message;
+
+            el.textContent = text;
         }
 
         function queryParams() {
@@ -312,66 +303,97 @@
             setJsonPanelVisible(false);
         }
 
-        btnHideJson.addEventListener('click', hideJsonPanel);
+        function bindAnalysisActions() {
+            showStatus = window.DsDashboard.createShowStatus(statusEl);
 
-        btnExport.addEventListener('click', async () => {
-            if (isJsonPanelVisible()) {
-                hideJsonPanel();
+            btnHideJson.addEventListener('click', hideJsonPanel);
+
+            btnExport.addEventListener('click', async () => {
+                if (isJsonPanelVisible()) {
+                    hideJsonPanel();
+                    return;
+                }
+
+                try {
+                    const data = await fetchExport();
+                    jsonOutput.textContent = JSON.stringify(data, null, 2);
+                    setJsonPanelVisible(true);
+                    showStatus(`Загружено: ${data.summary.total_answers} ответов, ${data.summary.employees_with_data} сотрудников.`, 'success');
+                } catch (e) {
+                    showStatus(e.message, 'error');
+                }
+            });
+
+            document.getElementById('btn-copy-json').addEventListener('click', async () => {
+                await navigator.clipboard.writeText(jsonOutput.textContent);
+                showStatus('JSON скопирован в буфер обмена.', 'success');
+            });
+
+            document.getElementById('btn-recommend').addEventListener('click', async () => {
+                const btn = document.getElementById('btn-recommend');
+                btn.disabled = true;
+                showStatus('Отправка данных в LLM… Это может занять до минуту.', 'loading');
+                recommendationPanel.classList.add('hidden');
+
+                try {
+                    if (!promptInput.value) {
+                        throw new Error('Выберите сценарий анализа.');
+                    }
+                    validateDates();
+
+                    const response = await fetch('{{ route('dashboard.analysis.recommend') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrf,
+                        },
+                        body: JSON.stringify(requestBody()),
+                    });
+
+                    const payload = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(payload.message ?? 'Ошибка LLM');
+                    }
+
+                    recommendationMeta.textContent = `${payload.data.prompt_label} · ${payload.data.period.from} — ${payload.data.period.to} · ответов: ${payload.data.summary.total_answers}`;
+                    renderRecommendationText(recommendationBody, payload.data.recommendation);
+                    const historyWrap = document.getElementById('recommendation-history');
+                    const historyLink = document.getElementById('recommendation-history-link');
+                    if (payload.data.history_url && historyWrap && historyLink) {
+                        historyLink.href = payload.data.history_url;
+                        historyWrap.classList.remove('hidden');
+                    } else if (historyWrap) {
+                        historyWrap.classList.add('hidden');
+                    }
+                    recommendationPanel.classList.remove('hidden');
+                    showStatus('Рекомендации получены и сохранены в истории.', 'success');
+                } catch (e) {
+                    showStatus(e.message, 'error');
+                } finally {
+                    btn.disabled = false;
+                }
+            });
+        }
+
+        let analysisActionsBound = false;
+
+        function bootAnalysisPage() {
+            if (analysisActionsBound || !window.DsDashboard?.createShowStatus) {
                 return;
             }
 
-            try {
-                const data = await fetchExport();
-                jsonOutput.textContent = JSON.stringify(data, null, 2);
-                setJsonPanelVisible(true);
-                showStatus(`Загружено: ${data.summary.total_answers} ответов, ${data.summary.employees_with_data} сотрудников.`, 'success');
-            } catch (e) {
-                showStatus(e.message, 'error');
-            }
-        });
+            analysisActionsBound = true;
+            bindAnalysisActions();
+        }
 
-        document.getElementById('btn-copy-json').addEventListener('click', async () => {
-            await navigator.clipboard.writeText(jsonOutput.textContent);
-            showStatus('JSON скопирован в буфер обмена.', 'success');
-        });
+        window.addEventListener('ds-dashboard-ready', bootAnalysisPage, { once: true });
 
-        document.getElementById('btn-recommend').addEventListener('click', async () => {
-            const btn = document.getElementById('btn-recommend');
-            btn.disabled = true;
-            showStatus('Отправка данных в LLM… Это может занять до минуту.', 'loading');
-            recommendationPanel.classList.add('hidden');
-
-            try {
-                if (!promptInput.value) {
-                    throw new Error('Выберите сценарий анализа.');
-                }
-                validateDates();
-
-                const response = await fetch('{{ route('dashboard.analysis.recommend') }}', {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrf,
-                    },
-                    body: JSON.stringify(requestBody()),
-                });
-
-                const payload = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(payload.message ?? 'Ошибка LLM');
-                }
-
-                recommendationMeta.textContent = `${payload.data.prompt_label} · ${payload.data.period.from} — ${payload.data.period.to} · ответов: ${payload.data.summary.total_answers}`;
-                recommendationBody.textContent = payload.data.recommendation;
-                recommendationPanel.classList.remove('hidden');
-                showStatus('Рекомендации получены.', 'success');
-            } catch (e) {
-                showStatus(e.message, 'error');
-            } finally {
-                btn.disabled = false;
-            }
-        });
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', bootAnalysisPage, { once: true });
+        } else {
+            bootAnalysisPage();
+        }
     </script>
 @endsection

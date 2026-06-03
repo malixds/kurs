@@ -6,6 +6,7 @@ use App\Http\Controllers\Dashboard\CompanyController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Dashboard\DeepAnalysisController;
 use App\Http\Controllers\Dashboard\IntegrationsController;
+use App\Http\Controllers\Dashboard\LlmRecommendationsController;
 use App\Http\Controllers\Dashboard\OnboardingController;
 use App\Http\Controllers\Dashboard\RegisterController;
 use Illuminate\Support\Facades\Route;
@@ -66,4 +67,9 @@ Route::middleware(['auth', 'company'])->group(function (): void {
     Route::post('/dashboard/deep-analysis/recommend', [DeepAnalysisController::class, 'recommend'])
         ->middleware('throttle:10,1')
         ->name('dashboard.deep-analysis.recommend');
+
+    Route::get('/dashboard/recommendations', [LlmRecommendationsController::class, 'index'])
+        ->name('dashboard.recommendations.index');
+    Route::get('/dashboard/recommendations/{recommendation}', [LlmRecommendationsController::class, 'show'])
+        ->name('dashboard.recommendations.show');
 });

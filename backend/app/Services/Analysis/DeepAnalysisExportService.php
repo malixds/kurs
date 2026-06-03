@@ -47,8 +47,8 @@ class DeepAnalysisExportService
             'wellbeing' => $wellbeing,
             'work_progress' => $workProgress,
             'integration_warnings' => array_values(array_unique($warnings)),
-            'llm_instructions' => 'Для рекомендаций используй employee_delivery_matrix: сопоставляй tasks.* и wellbeing.* по каждому имени. '
-                .'Указывай цифры (закрыто, просрочено, avg_mood, ключи overdue_issues). '
+            'llm_instructions' => 'Развёрнутые рекомендации по employee_delivery_matrix: wellbeing + tasks по каждому name, '
+                .'оценка риска, шаги со сроками, цифры (закрыто, просрочено, avg_mood, ключи overdue_issues). '
                 .'Не выдумывай метрики, которых нет в JSON.',
         ];
     }

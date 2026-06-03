@@ -14,7 +14,7 @@ class WellbeingLlmPayloadBuilder
             'period' => $export['period'] ?? null,
             'summary' => $export['summary'] ?? null,
             'employee_wellbeing_summary' => $this->summarizeEmployees($export['employees'] ?? []),
-            'llm_instructions' => 'В каждой рекомендации укажи поле name из employee_wellbeing_summary и минимум одну цифру (avg_mood, avg_stress или team_support_yes_rate).',
+            'llm_instructions' => 'Развёрнутые рекомендации: name из employee_wellbeing_summary, метрики, оценка риска, 2–3 шага со сроками (avg_mood 1–5 выше=лучше; avg_stress 1–5 выше=хуже).',
         ];
     }
 
