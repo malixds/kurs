@@ -1,54 +1,52 @@
-/* Fallback when Vite build is stale — dark onboarding theme */
-.onboarding-page {
-    background-color: #07070f;
-    color: #e2e8f0;
+/* Fallback when Vite build is stale — Soft Gradient SaaS theme */
+.onboarding-page,
+.ds-page {
+    background-color: #f7f8fc;
+    color: #111827;
     min-height: 100vh;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
 }
 
-.onboarding-page a {
-    color: #c4b5fd;
+.onboarding-page a:not(.ds-btn-primary):not(.ds-btn-secondary),
+.ds-page a:not(.ds-btn-primary):not(.ds-btn-secondary) {
+    color: #4e44e5;
 }
 
-.onboarding-page h1,
-.onboarding-page h2,
-.onboarding-page .text-white {
-    color: #fff;
+.onboarding-page header,
+.ds-page header {
+    border-bottom: none;
+    background: transparent;
 }
 
-.onboarding-page .text-slate-400,
-.onboarding-page .text-slate-500 {
-    color: #94a3b8;
+.onboarding-page .onboarding-card,
+.ds-page .ds-card {
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    background: #ffffff;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05), 0 25px 80px rgba(0, 0, 0, 0.06);
 }
 
-.onboarding-page header {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    background: rgba(0, 0, 0, 0.2);
-}
-
-.onboarding-page .onboarding-card {
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(0, 0, 0, 0.35);
-    border-radius: 1rem;
-}
-
-.onboarding-page .btn-primary {
+.onboarding-page .btn-primary,
+.ds-page .ds-btn-primary {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    border-radius: 0.75rem;
-    background: linear-gradient(to right, #7c3aed, #4f46e5);
+    border-radius: 0.875rem;
+    background: #0f1a3d;
     color: #fff;
-    padding: 0.75rem 1.5rem;
+    padding: 0.875rem 1.5rem;
     font-weight: 600;
     text-decoration: none;
 }
 
-.onboarding-page .btn-secondary {
+.onboarding-page .btn-secondary,
+.ds-page .ds-btn-secondary {
     display: inline-flex;
-    border-radius: 0.75rem;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    color: #e2e8f0;
-    padding: 0.75rem 1.5rem;
+    border-radius: 0.875rem;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: #ffffff;
+    color: #111827;
+    padding: 0.875rem 1.5rem;
     font-weight: 600;
     text-decoration: none;
 }

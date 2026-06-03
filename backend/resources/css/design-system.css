@@ -1,0 +1,763 @@
+/* Soft Gradient SaaS Landing — design tokens */
+@theme {
+    --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+
+    --color-ds-bg: #f7f8fc;
+    --color-ds-bg-soft: #fff6f6;
+    --color-ds-surface: #ffffff;
+    --color-ds-brand: #6f63ff;
+    --color-ds-brand-light: #8f7dff;
+    --color-ds-brand-accent: #4e44e5;
+    --color-ds-text: #111827;
+    --color-ds-text-secondary: #5f6473;
+    --color-ds-text-muted: #8c92a3;
+    --color-ds-cta: #0f1a3d;
+    --color-ds-brand-tint: rgba(111, 99, 255, 0.1);
+}
+
+@layer base {
+    .ds-page {
+        font-family: var(--font-sans);
+        color: var(--color-ds-text);
+        background-color: var(--color-ds-bg);
+        -webkit-font-smoothing: antialiased;
+    }
+}
+
+@layer components {
+    .ds-atmosphere {
+        position: relative;
+        background:
+            radial-gradient(ellipse 120% 80% at 50% -20%, #ffffff 0%, #f7f4ff 45%, #fbeff2 100%),
+            linear-gradient(180deg, #f7f8fc 0%, #fff6f6 100%);
+    }
+
+    .ds-atmosphere::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+            radial-gradient(circle 480px at 15% 25%, rgba(183, 167, 255, 0.18), transparent 70%),
+            radial-gradient(circle 400px at 85% 15%, rgba(251, 239, 242, 0.5), transparent 65%),
+            radial-gradient(circle 520px at 70% 85%, rgba(111, 99, 255, 0.08), transparent 70%);
+        z-index: 0;
+    }
+
+    .ds-gradient-text {
+        background: linear-gradient(135deg, #6f63ff 0%, #8d7dff 50%, #b7a7ff 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+    .ds-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        height: 1.75rem;
+        padding: 0 0.875rem;
+        border-radius: 999px;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: var(--color-ds-brand-accent);
+        background: var(--color-ds-brand-tint);
+        border: 1px solid rgba(111, 99, 255, 0.12);
+    }
+
+    .ds-btn-primary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        min-height: 3rem;
+        padding: 0.875rem 1.5rem;
+        border-radius: 0.875rem;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: #ffffff;
+        background: var(--color-ds-cta);
+        box-shadow: 0 10px 30px rgba(15, 26, 61, 0.12);
+        transition: transform 0.25s ease-out, box-shadow 0.25s ease-out;
+    }
+
+    .ds-btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 14px 40px rgba(15, 26, 61, 0.16);
+    }
+
+    .ds-btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        min-height: 3rem;
+        padding: 0.875rem 1.5rem;
+        border-radius: 0.875rem;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--color-ds-text);
+        background: var(--color-ds-surface);
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        transition: transform 0.25s ease-out, box-shadow 0.25s ease-out, border-color 0.25s ease-out;
+    }
+
+    .ds-btn-secondary:hover {
+        transform: translateY(-1px);
+        border-color: rgba(111, 99, 255, 0.2);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+
+    .ds-card {
+        background: var(--color-ds-surface);
+        border-radius: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        box-shadow:
+            0 10px 30px rgba(0, 0, 0, 0.05),
+            0 25px 80px rgba(0, 0, 0, 0.06);
+        padding: 1.25rem 1.5rem;
+        transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+    }
+
+    .ds-card:hover {
+        transform: translateY(-2px) scale(1.01);
+        box-shadow:
+            0 14px 40px rgba(0, 0, 0, 0.06),
+            0 30px 90px rgba(111, 99, 255, 0.08);
+    }
+
+    .ds-panel {
+        background: var(--color-ds-surface);
+        border-radius: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        box-shadow:
+            0 10px 30px rgba(0, 0, 0, 0.05),
+            0 25px 80px rgba(0, 0, 0, 0.06);
+    }
+
+    .ds-text-muted {
+        color: var(--color-ds-text-muted);
+    }
+
+    .ds-text-secondary {
+        color: var(--color-ds-text-secondary);
+    }
+
+    .ds-link {
+        font-weight: 500;
+        color: var(--color-ds-brand-accent);
+        transition: color 0.2s ease-out;
+    }
+
+    .ds-link:hover {
+        color: var(--color-ds-brand);
+    }
+
+    .ds-nav-link {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--color-ds-text-secondary);
+        transition: color 0.2s ease-out;
+    }
+
+    .ds-nav-link:hover {
+        color: var(--color-ds-text);
+    }
+
+    .ds-input {
+        width: 100%;
+        min-height: 3rem;
+        padding: 0.75rem 1rem;
+        border-radius: 0.875rem;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        background: var(--color-ds-surface);
+        color: var(--color-ds-text);
+        outline: none;
+        transition: border-color 0.2s ease-out, box-shadow 0.2s ease-out;
+    }
+
+    .ds-input::placeholder {
+        color: var(--color-ds-text-muted);
+    }
+
+    .ds-input:focus {
+        border-color: rgba(111, 99, 255, 0.45);
+        box-shadow: 0 0 0 3px rgba(111, 99, 255, 0.12);
+    }
+
+    .ds-date-field {
+        position: relative;
+        display: block;
+        width: 100%;
+    }
+
+    .ds-date-trigger {
+        display: flex;
+        width: 100%;
+        min-height: 3rem;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        border-radius: 0.875rem;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        background: var(--color-ds-surface);
+        color: var(--color-ds-text);
+        font-family: inherit;
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-align: left;
+        cursor: pointer;
+        transition: border-color 0.2s ease-out, box-shadow 0.2s ease-out;
+    }
+
+    .ds-date-trigger::after {
+        content: '';
+        flex-shrink: 0;
+        width: 1.125rem;
+        height: 1.125rem;
+        background-color: var(--color-ds-brand);
+        mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='black' stroke-width='1.75'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'/%3E%3C/svg%3E");
+        mask-repeat: no-repeat;
+        mask-position: center;
+        mask-size: contain;
+        opacity: 0.85;
+    }
+
+    .ds-date-trigger:hover {
+        border-color: rgba(111, 99, 255, 0.25);
+    }
+
+    .ds-date-trigger:focus-visible {
+        outline: none;
+        border-color: rgba(111, 99, 255, 0.45);
+        box-shadow: 0 0 0 3px rgba(111, 99, 255, 0.12);
+    }
+
+    .ds-date-trigger[aria-expanded='true'] {
+        border-color: rgba(111, 99, 255, 0.45);
+        box-shadow: 0 0 0 3px rgba(111, 99, 255, 0.12);
+    }
+
+    .ds-datepicker {
+        position: absolute;
+        top: calc(100% + 0.5rem);
+        left: 0;
+        z-index: 50;
+        width: min(18.5rem, calc(100vw - 2rem));
+        padding: 1rem;
+        border-radius: 1.25rem;
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        background: var(--color-ds-surface);
+        box-shadow:
+            0 10px 30px rgba(0, 0, 0, 0.08),
+            0 25px 80px rgba(111, 99, 255, 0.1);
+    }
+
+    .ds-datepicker__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .ds-datepicker__title {
+        flex: 1;
+        text-align: center;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--color-ds-text);
+    }
+
+    .ds-datepicker__nav {
+        display: inline-flex;
+        width: 2rem;
+        height: 2rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.625rem;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        background: #f7f8fc;
+        color: var(--color-ds-text-secondary);
+        font-size: 1.25rem;
+        line-height: 1;
+        cursor: pointer;
+        transition: background 0.2s ease-out, color 0.2s ease-out, border-color 0.2s ease-out;
+    }
+
+    .ds-datepicker__nav:hover:not(:disabled) {
+        border-color: rgba(111, 99, 255, 0.2);
+        background: rgba(111, 99, 255, 0.08);
+        color: var(--color-ds-brand-accent);
+    }
+
+    .ds-datepicker__nav:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+    }
+
+    .ds-datepicker__weekdays {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 0.125rem;
+        margin-bottom: 0.375rem;
+    }
+
+    .ds-datepicker__weekday {
+        text-align: center;
+        font-size: 0.6875rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        color: var(--color-ds-text-muted);
+    }
+
+    .ds-datepicker__grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 0.125rem;
+    }
+
+    .ds-datepicker__day {
+        display: inline-flex;
+        height: 2.25rem;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        border-radius: 0.625rem;
+        background: transparent;
+        color: var(--color-ds-text);
+        font-family: inherit;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.15s ease-out, color 0.15s ease-out;
+    }
+
+    .ds-datepicker__day:hover:not(:disabled) {
+        background: rgba(111, 99, 255, 0.1);
+        color: var(--color-ds-brand-accent);
+    }
+
+    .ds-datepicker__day--outside {
+        color: var(--color-ds-text-muted);
+        opacity: 0.55;
+    }
+
+    .ds-datepicker__day--today:not(.ds-datepicker__day--selected) {
+        box-shadow: inset 0 0 0 1px rgba(111, 99, 255, 0.35);
+    }
+
+    .ds-datepicker__day--selected {
+        background: linear-gradient(135deg, #6f63ff 0%, #8d7dff 100%);
+        color: #ffffff;
+        box-shadow: 0 6px 16px rgba(111, 99, 255, 0.35);
+    }
+
+    .ds-datepicker__day--selected:hover {
+        background: linear-gradient(135deg, #6f63ff 0%, #8d7dff 100%);
+        color: #ffffff;
+    }
+
+    .ds-datepicker__day--disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+    }
+
+    .ds-status {
+        display: inline-flex;
+        max-width: 100%;
+        align-items: center;
+        gap: 0.75rem;
+        border-radius: 0.875rem;
+        padding: 0.625rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        line-height: 1.4;
+        transition: border-color 0.2s ease-out, box-shadow 0.2s ease-out;
+    }
+
+    .ds-status--loading,
+    .ds-status--info,
+    .ds-status--success,
+    .ds-status--error {
+        color: var(--color-ds-text);
+        background: var(--color-ds-surface);
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+    }
+
+    .ds-status--success {
+        border-color: rgba(16, 185, 129, 0.28);
+    }
+
+    .ds-status--error {
+        border-color: rgba(239, 68, 68, 0.28);
+    }
+
+    .ds-status__text {
+        color: var(--color-ds-text);
+        font-weight: 600;
+    }
+
+    .ds-status--error .ds-status__text {
+        color: #b91c1c;
+    }
+
+    .ds-status-icon {
+        display: inline-flex;
+        flex-shrink: 0;
+        width: 1.125rem;
+        height: 1.125rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .ds-status-icon--success {
+        color: #059669;
+        background: rgba(16, 185, 129, 0.12);
+    }
+
+    .ds-status-icon--success::before {
+        content: '✓';
+    }
+
+    .ds-status-icon--error {
+        color: #dc2626;
+        background: rgba(239, 68, 68, 0.1);
+    }
+
+    .ds-status-icon--error::before {
+        content: '!';
+    }
+
+    .ds-recommendation-panel {
+        background: var(--color-ds-surface);
+        border-radius: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        box-shadow:
+            0 10px 30px rgba(0, 0, 0, 0.05),
+            0 25px 80px rgba(111, 99, 255, 0.08);
+        padding: 1.5rem;
+    }
+
+    .ds-recommendation-panel__header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .ds-recommendation-panel__title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: var(--color-ds-text);
+    }
+
+    .ds-recommendation-panel__meta {
+        margin-top: 0.375rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--color-ds-text-muted);
+    }
+
+    .ds-recommendation-panel__body {
+        margin-top: 1rem;
+        padding: 1.25rem 1.25rem 1.25rem 1rem;
+        border-radius: 1rem;
+        background: linear-gradient(180deg, #f7f8fc 0%, #ffffff 100%);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .ds-recommendation-blocks {
+        margin: 0;
+        padding: 0;
+    }
+
+    .ds-recommendation-blocks__item {
+        font-size: 0.9375rem;
+        font-weight: 500;
+        line-height: 1.65;
+        color: var(--color-ds-text-secondary);
+    }
+
+    .ds-recommendation-blocks__para {
+        margin: 0;
+    }
+
+    .ds-recommendation-blocks__para--spaced {
+        margin-top: 0.625rem;
+    }
+
+    .ds-recommendation-blocks__item + .ds-recommendation-blocks__item {
+        margin-top: 1.125rem;
+        padding-top: 1.125rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .ds-date-range {
+        display: inline-flex;
+        max-width: 100%;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .ds-date-range__input {
+        width: auto;
+        min-width: 10.5rem;
+        flex: 1 1 10.5rem;
+    }
+
+    .ds-date-range__sep {
+        flex-shrink: 0;
+        width: 1.125rem;
+        height: 0.1875rem;
+        border-radius: 999px;
+        background: var(--color-ds-text);
+        opacity: 0.72;
+    }
+
+    .ds-steps {
+        display: grid;
+        gap: 0.75rem;
+    }
+
+    @media (min-width: 640px) {
+        .ds-steps {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .ds-steps {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    .ds-step-card {
+        display: block;
+        padding: 1rem 1.125rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        background: var(--color-ds-surface);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+    }
+
+    .ds-step-card__num {
+        display: inline-flex;
+        width: 1.5rem;
+        height: 1.5rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.5rem;
+        background: rgba(111, 99, 255, 0.12);
+        color: var(--color-ds-brand-accent);
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .ds-step-card__title {
+        display: block;
+        margin-top: 0.625rem;
+        font-size: 0.9375rem;
+        font-weight: 700;
+        color: var(--color-ds-text);
+    }
+
+    .ds-step-card__desc {
+        display: block;
+        margin-top: 0.25rem;
+        font-size: 0.8125rem;
+        line-height: 1.5;
+        color: var(--color-ds-text-secondary);
+    }
+
+    .ds-step-card--link {
+        text-decoration: none;
+        transition: border-color 0.2s ease-out, box-shadow 0.2s ease-out;
+    }
+
+    .ds-step-card--link:hover {
+        border-color: rgba(111, 99, 255, 0.25);
+        box-shadow: 0 8px 24px rgba(111, 99, 255, 0.1);
+    }
+
+    .ds-step-card--link .ds-step-card__title {
+        color: var(--color-ds-brand-accent);
+    }
+
+    .ds-provider-grid {
+        display: grid;
+        gap: 0.75rem;
+    }
+
+    @media (min-width: 640px) {
+        .ds-provider-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    .ds-provider-option {
+        position: relative;
+        display: block;
+        cursor: pointer;
+    }
+
+    .ds-provider-option__input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .ds-provider-option__box {
+        display: block;
+        padding: 0.875rem 1rem;
+        border-radius: 0.875rem;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        background: var(--color-ds-surface);
+        transition: border-color 0.2s ease-out, box-shadow 0.2s ease-out, background 0.2s ease-out;
+    }
+
+    .ds-provider-option__name {
+        display: block;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--color-ds-text);
+    }
+
+    .ds-provider-option__meta {
+        display: block;
+        margin-top: 0.25rem;
+        font-size: 0.75rem;
+        color: var(--color-ds-text-muted);
+    }
+
+    .ds-provider-option__input:checked + .ds-provider-option__box {
+        border-color: rgba(111, 99, 255, 0.45);
+        background: linear-gradient(145deg, rgba(111, 99, 255, 0.08), rgba(255, 255, 255, 0.98));
+        box-shadow:
+            0 0 0 1px rgba(111, 99, 255, 0.15),
+            0 8px 20px rgba(111, 99, 255, 0.1);
+    }
+
+    .ds-provider-option__input:focus-visible + .ds-provider-option__box {
+        outline: 2px solid rgba(111, 99, 255, 0.45);
+        outline-offset: 2px;
+    }
+
+    .ds-provider-option:hover .ds-provider-option__box {
+        border-color: rgba(111, 99, 255, 0.25);
+    }
+
+    .ds-prompt-card--active {
+        border-color: rgba(111, 99, 255, 0.45) !important;
+        background: linear-gradient(145deg, rgba(111, 99, 255, 0.08), rgba(255, 255, 255, 0.95)) !important;
+        box-shadow:
+            0 0 0 1px rgba(111, 99, 255, 0.2),
+            0 10px 30px rgba(111, 99, 255, 0.1) !important;
+    }
+
+    .ds-prompt-card--active .prompt-card__title {
+        color: var(--color-ds-text) !important;
+    }
+
+    .ds-prompt-card--active .prompt-card__desc {
+        color: var(--color-ds-text-secondary) !important;
+    }
+
+    .ds-loader {
+        position: relative;
+        flex-shrink: 0;
+        width: 1.125rem;
+        height: 1.125rem;
+    }
+
+    .ds-loader::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        border: 2px solid rgba(111, 99, 255, 0.18);
+        border-top-color: var(--color-ds-brand);
+        animation: ds-spin 0.65s linear infinite;
+    }
+
+    .ds-loader::after {
+        content: '';
+        position: absolute;
+        inset: 3px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(111, 99, 255, 0.15), transparent 60%);
+        animation: ds-pulse-soft 1.2s ease-in-out infinite;
+    }
+
+    @keyframes ds-spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes ds-pulse-soft {
+        0%,
+        100% {
+            opacity: 0.35;
+        }
+
+        50% {
+            opacity: 0.85;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .ds-loader::before,
+        .ds-loader::after {
+            animation: none;
+        }
+
+        .ds-loader::before {
+            border-top-color: var(--color-ds-brand);
+        }
+    }
+
+    .ds-floating-card {
+        position: absolute;
+        background: var(--color-ds-surface);
+        border-radius: 1.25rem;
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        box-shadow:
+            0 10px 30px rgba(0, 0, 0, 0.05),
+            0 25px 80px rgba(0, 0, 0, 0.06);
+        padding: 1rem 1.25rem;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+        .ds-float-a {
+            animation: ds-float 6s ease-in-out infinite;
+        }
+
+        .ds-float-b {
+            animation: ds-float 7s ease-in-out infinite 0.8s;
+        }
+
+        .ds-float-c {
+            animation: ds-float 5.5s ease-in-out infinite 1.4s;
+        }
+    }
+
+    @keyframes ds-float {
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-8px);
+        }
+    }
+}

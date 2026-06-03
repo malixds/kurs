@@ -1,39 +1,43 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Dashboard') — {{ config('app.name') }}</title>
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=plus-jakarta-sans:400,500,600,700" rel="stylesheet" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100 antialiased">
-    <nav class="border-b border-slate-800 bg-slate-900/80 backdrop-blur">
-        <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
-            <div>
-                <a href="{{ route('dashboard.index') }}" class="text-lg font-semibold text-white">
-                    {{ config('app.name') }}
-                </a>
-                <p class="text-sm text-slate-400">Remote team wellbeing analytics</p>
-            </div>
-            <div class="flex items-center gap-4">
-                @if (auth()->user()->companies()->exists())
-                    <a href="{{ route('companies.index') }}" class="text-sm text-slate-300 hover:text-white">
-                        Компании
+<body class="ds-page ds-atmosphere relative min-h-screen antialiased">
+    <div class="relative z-10">
+        <nav class="mx-auto max-w-7xl px-6 py-5 lg:px-10">
+            <div class="flex items-center justify-between rounded-2xl border border-white/60 bg-white/80 px-5 py-4 shadow-[0_10px_30px_rgba(0,0,0,0.05)] backdrop-blur-sm">
+                <div>
+                    <a href="{{ route('dashboard.index') }}" class="text-lg font-bold tracking-tight text-[#111827]">
+                        {{ config('app.name') }}
                     </a>
-                @endif
-                <span class="text-sm text-slate-300">{{ auth()->user()->name }}</span>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm hover:bg-slate-800">
-                        Logout
-                    </button>
-                </form>
+                    <p class="text-xs font-medium text-[#8C92A3]">Аналитика благополучия команд</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    @if (auth()->user()->companies()->exists())
+                        <a href="{{ route('companies.index') }}" class="ds-nav-link hidden sm:inline">
+                            Компании
+                        </a>
+                    @endif
+                    <span class="hidden text-sm text-[#5F6473] sm:inline">{{ auth()->user()->name }}</span>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="ds-btn-secondary !min-h-[2.5rem] !px-3 !py-1.5 text-sm">
+                            Выйти
+                        </button>
+                    </form>
+                </div>
             </div>
-        </div>
-    </nav>
+        </nav>
 
-    <main class="mx-auto max-w-7xl px-4 py-8">
-        @yield('content')
-    </main>
+        <main class="mx-auto max-w-7xl px-6 py-8 lg:px-10">
+            @yield('content')
+        </main>
+    </div>
 </body>
 </html>

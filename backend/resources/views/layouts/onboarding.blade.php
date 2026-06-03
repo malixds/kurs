@@ -4,42 +4,34 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Wellbeing Monitor') — {{ config('app.name') }}</title>
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=plus-jakarta-sans:400,500,600,700" rel="stylesheet" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="onboarding-page min-h-screen bg-[#07070f] text-slate-100 antialiased">
-    <div class="pointer-events-none fixed inset-0 overflow-hidden">
-        <div class="absolute -left-32 top-0 h-96 w-96 rounded-full bg-violet-700/20 blur-3xl"></div>
-        <div class="absolute right-0 top-1/3 h-80 w-80 rounded-full bg-indigo-600/15 blur-3xl"></div>
-        <div class="absolute bottom-0 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-blue-700/10 blur-3xl"></div>
-    </div>
-
+<body class="ds-page onboarding-page ds-atmosphere relative min-h-screen antialiased">
     <div class="relative z-10 flex min-h-screen flex-col">
-        <header class="border-b border-white/5 bg-black/20 backdrop-blur">
-            <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
-                <div>
-                    <p class="text-lg font-semibold tracking-tight text-white">{{ config('app.name') }}</p>
-                    <p class="text-xs text-violet-300/70">Мониторинг благополучия удалённых команд</p>
-                </div>
+        <header class="mx-auto w-full max-w-7xl px-6 py-5 lg:px-10 lg:py-6">
+            <div class="flex h-[4.5rem] items-center justify-between">
+                <a href="{{ route('onboarding.welcome') }}" class="shrink-0">
+                    <p class="text-lg font-bold tracking-tight text-[#111827]">{{ config('app.name') }}</p>
+                    <p class="text-xs font-medium text-[#8C92A3]">Мониторинг благополучия команд</p>
+                </a>
+
                 <div class="flex items-center gap-3">
                     @auth
-                        <a href="{{ route('companies.index') }}"
-                           class="rounded-lg border border-white/10 px-3 py-1.5 text-sm text-slate-300 transition hover:border-violet-500/40 hover:bg-violet-500/10">
+                        <a href="{{ route('companies.index') }}" class="ds-btn-secondary hidden !min-h-[2.75rem] !px-4 !py-2 text-sm sm:inline-flex">
                             Мои компании
                         </a>
-                        <span class="hidden text-sm text-slate-400 sm:inline">{{ auth()->user()->name }}</span>
+                        <span class="hidden text-sm text-[#5F6473] lg:inline">{{ auth()->user()->name }}</span>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <button type="submit" class="rounded-lg border border-white/10 px-3 py-1.5 text-sm text-slate-300 transition hover:border-violet-500/40 hover:bg-violet-500/10">
+                            <button type="submit" class="ds-btn-secondary !min-h-[2.75rem] !px-4 !py-2 text-sm">
                                 Выйти
                             </button>
                         </form>
                     @else
-                        <a href="{{ route('login') }}"
-                           class="rounded-lg border border-white/10 px-3 py-1.5 text-sm text-slate-300 transition hover:border-violet-500/40 hover:bg-violet-500/10">
-                            Войти
-                        </a>
-                        <a href="{{ route('register') }}"
-                           class="rounded-lg bg-violet-600/80 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-violet-500">
+                        <a href="{{ route('login') }}" class="ds-nav-link hidden sm:inline">Войти</a>
+                        <a href="{{ route('register') }}" class="ds-btn-primary !min-h-[2.75rem] !px-4 !py-2 text-sm">
                             Регистрация
                         </a>
                     @endauth
@@ -47,7 +39,7 @@
             </div>
         </header>
 
-        <main class="mx-auto w-full max-w-5xl flex-1 px-4 py-10">
+        <main class="mx-auto w-full max-w-7xl flex-1 px-6 pb-16 lg:px-10 lg:pb-24">
             @yield('content')
         </main>
     </div>

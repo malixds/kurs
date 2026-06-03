@@ -7,7 +7,7 @@
 
     <div class="mb-8">
         <h1 class="text-3xl font-semibold">Интеграции</h1>
-        <p class="mt-1 text-slate-400">
+        <p class="mt-1 ds-text-secondary">
             @if ($activeCompany ?? null)
                 {{ $activeCompany->name }} —
             @endif
@@ -28,18 +28,18 @@
                 $connected = $integration?->isConnected();
                 $creds = $integration?->credentials ?? [];
             @endphp
-            <div class="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+            <div class="ds-panel p-6">
                 <div class="flex flex-wrap items-start justify-between gap-4">
                     <div>
                         <h2 class="text-lg font-medium">{{ $provider['name'] }}</h2>
-                        <p class="mt-1 text-sm text-slate-400">
+                        <p class="mt-1 text-sm ds-text-secondary">
                             @if ($connected)
                                 <span class="text-emerald-400">Подключено</span>
                                 @if ($integration->last_sync_at)
                                     · синхр. {{ $integration->last_sync_at->diffForHumans() }}
                                 @endif
                             @else
-                                <span class="text-slate-500">Не подключено</span>
+                                <span class="ds-text-muted">Не подключено</span>
                             @endif
                         </p>
                         @if ($integration?->hasStaleEncryptedCredentials())
@@ -56,7 +56,7 @@
                         <form method="POST" action="{{ route('dashboard.integrations.destroy', $provider['slug']) }}">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="rounded-lg border border-slate-600 px-3 py-1.5 text-xs hover:bg-slate-800">
+                            <button type="submit" class="rounded-lg ds-btn-secondary !min-h-0 !px-3 !py-1.5 text-xs">
                                 Отключить
                             </button>
                         </form>
@@ -69,10 +69,10 @@
                     <div class="grid gap-4 sm:grid-cols-2">
                         @foreach ($provider['config_schema'] as $field)
                             <div class="{{ ($field['type'] ?? '') === 'select' ? 'sm:col-span-2' : '' }}">
-                                <label class="mb-1 block text-xs text-slate-400">{{ $field['label'] }}</label>
+                                <label class="mb-1 block text-xs ds-text-secondary">{{ $field['label'] }}</label>
                                 @if (($field['type'] ?? 'text') === 'select')
                                     <select name="{{ $field['key'] }}"
-                                            class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white [color-scheme:dark]">
+                                            class="w-full rounded-lg ds-input !min-h-0 !py-2 text-sm">
                                         @foreach ($field['options'] ?? [] as $val => $label)
                                             <option value="{{ $val }}" @selected(($creds[$field['key']] ?? '') === $val)>{{ $label }}</option>
                                         @endforeach
@@ -82,7 +82,7 @@
                                            name="{{ $field['key'] }}"
                                            value="{{ $field['type'] === 'password' ? '' : ($creds[$field['key']] ?? '') }}"
                                            placeholder="{{ $field['type'] === 'password' && $connected ? '••••••••' : '' }}"
-                                           class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white"
+                                           class="w-full rounded-lg ds-input !min-h-0 !py-2 text-sm"
                                            @if ($field['required'] ?? false) required @endif>
                                 @endif
                             </div>
@@ -90,10 +90,10 @@
                     </div>
                     <div class="flex flex-wrap gap-3">
                         <button type="button"
-                                class="btn-test rounded-lg border border-slate-600 px-4 py-2 text-sm hover:bg-slate-800">
+                                class="btn-test rounded-lg ds-btn-secondary !min-h-0 !px-4 !py-2 text-sm">
                             Проверить подключение
                         </button>
-                        <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold hover:bg-indigo-500">
+                        <button type="submit" class="rounded-lg ds-btn-primary !min-h-0 !px-4 !py-2 text-sm">
                             Сохранить
                         </button>
                     </div>
@@ -103,24 +103,24 @@
         @endforeach
     </div>
 
-    <div class="mt-10 rounded-2xl border border-slate-800 bg-slate-900 p-6">
+    <div class="mt-10 ds-panel p-6">
         <h2 class="text-lg font-medium">Маппинг сотрудников</h2>
-        <p class="mt-1 text-sm text-slate-400">Связи создаются автоматически при синхронизации по email. Ниже — текущие привязки.</p>
+        <p class="mt-1 text-sm ds-text-secondary">Связи создаются автоматически при синхронизации по email. Ниже — текущие привязки.</p>
         <div class="mt-4 overflow-x-auto">
             <table class="min-w-full text-left text-sm">
-                <thead class="text-slate-400">
+                <thead class="ds-text-secondary">
                     <tr>
                         <th class="px-3 py-2">Сотрудник</th>
                         <th class="px-3 py-2">Email</th>
                         <th class="px-3 py-2">Интеграции</th>
                     </tr>
                 </thead>
-                <tbody class="text-slate-300">
+                <tbody class="text-[#5F6473]">
                     @forelse ($employees as $employee)
-                        <tr class="border-t border-slate-800">
+                        <tr class="border-t border-black/[0.06]">
                             <td class="px-3 py-2">{{ $employee->name }}</td>
                             <td class="px-3 py-2">{{ $employee->email ?? '—' }}</td>
-                            <td class="px-3 py-2 text-xs text-slate-500">
+                            <td class="px-3 py-2 text-xs ds-text-muted">
                                 @php $empIds = $identities->get($employee->id) ?? collect(); @endphp
                                 @forelse ($empIds as $identity)
                                     {{ $identity->companyIntegration->provider_slug }} ({{ $identity->external_login ?? $identity->external_user_id }})
@@ -132,7 +132,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="3" class="px-3 py-4 text-slate-500">Нет сотрудников с ответами.</td>
+                            <td colspan="3" class="px-3 py-4 ds-text-muted">Нет сотрудников с ответами.</td>
                         </tr>
                     @endforelse
                 </tbody>

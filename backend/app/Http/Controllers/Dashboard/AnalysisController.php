@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Dashboard\AnalysisPeriodRequest;
+use App\Enums\LlmRecommendationSource;
 use App\Services\Analysis\EmployeeResponsesExportService;
 use App\Services\Analysis\LlmAnalysisService;
+use App\Services\Analysis\LlmRecommendationStoreService;
 use App\Services\Analysis\WellbeingLlmPayloadBuilder;
 use App\Services\Company\ActiveCompanyService;
 use App\Support\AnalysisPeriodResolver;
@@ -24,6 +26,7 @@ class AnalysisController extends Controller
         private readonly EmployeeResponsesExportService $exportService,
         private readonly LlmAnalysisService $llmService,
         private readonly WellbeingLlmPayloadBuilder $wellbeingLlmPayloadBuilder,
+        private readonly LlmRecommendationStoreService $recommendationStore,
     ) {}
 
     public function index(Request $request): View
@@ -85,6 +88,18 @@ class AnalysisController extends Controller
         $llmPayload = $this->wellbeingLlmPayloadBuilder->fromExport($payload);
         $recommendation = $this->llmService->analyze($promptConfig['system'], $llmPayload);
 
+        $saved = $this->recommendationStore->store(
+            companyId: $companyId,
+            userId: $request->user()->id,
+            source: LlmRecommendationSource::Analysis,
+            promptId: $promptId,
+            promptLabel: $promptConfig['label'],
+            periodFrom: $from,
+            periodTo: $to,
+            recommendation: $recommendation,
+            summary: $payload['summary'],
+        );
+
         return response()->json([
             'data' => [
                 'prompt_id' => $promptId,
@@ -92,6 +107,8 @@ class AnalysisController extends Controller
                 'period' => $payload['period'],
                 'summary' => $payload['summary'],
                 'recommendation' => $recommendation,
+                'recommendation_id' => $saved->id,
+                'history_url' => route('dashboard.recommendations.show', $saved),
             ],
         ]);
     }

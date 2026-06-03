@@ -71,4 +71,9 @@ class Company extends Model
     {
         return $this->hasMany(WorkProgressSnapshot::class);
     }
+
+    public function llmRecommendations(): HasMany
+    {
+        return $this->hasMany(LlmRecommendation::class);
+    }
 }

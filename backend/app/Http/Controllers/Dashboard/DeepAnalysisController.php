@@ -7,9 +7,11 @@ use App\Http\Requests\Dashboard\AnalysisPeriodRequest;
 use App\Http\Requests\Dashboard\DeepAnalysisRequest;
 use App\Integrations\IntegrationManager;
 use App\Integrations\WorkProgressAggregator;
+use App\Enums\LlmRecommendationSource;
 use App\Services\Analysis\DeepAnalysisExportService;
 use App\Services\Analysis\DeepAnalysisLlmPayloadBuilder;
 use App\Services\Analysis\LlmAnalysisService;
+use App\Services\Analysis\LlmRecommendationStoreService;
 use App\Services\Billing\PlanLimitService;
 use App\Services\Company\ActiveCompanyService;
 use App\Support\AnalysisPeriodResolver;
@@ -31,6 +33,7 @@ class DeepAnalysisController extends Controller
         private readonly DeepAnalysisLlmPayloadBuilder $llmPayloadBuilder,
         private readonly LlmAnalysisService $llmService,
         private readonly PlanLimitService $planLimitService,
+        private readonly LlmRecommendationStoreService $recommendationStore,
     ) {}
 
     public function index(Request $request): View
@@ -142,6 +145,19 @@ class DeepAnalysisController extends Controller
         $llmPayload = $this->llmPayloadBuilder->fromExport($payload);
         $recommendation = $this->llmService->analyzeCombined($promptConfig['system'], $llmPayload);
 
+        $saved = $this->recommendationStore->store(
+            companyId: $companyId,
+            userId: $request->user()->id,
+            source: LlmRecommendationSource::DeepAnalysis,
+            promptId: $promptId,
+            promptLabel: $promptConfig['label'],
+            periodFrom: $from,
+            periodTo: $to,
+            recommendation: $recommendation,
+            summary: $payload['wellbeing']['summary'],
+            providerSlugs: $providers !== [] ? array_values($providers) : null,
+        );
+
         return response()->json([
             'data' => [
                 'prompt_id' => $promptId,
@@ -149,6 +165,8 @@ class DeepAnalysisController extends Controller
                 'period' => $payload['period'],
                 'summary' => $payload['wellbeing']['summary'],
                 'recommendation' => $recommendation,
+                'recommendation_id' => $saved->id,
+                'history_url' => route('dashboard.recommendations.show', $saved),
             ],
         ]);
     }
