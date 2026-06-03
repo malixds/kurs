@@ -1,34 +1,39 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Wellbeing Check-in</title>
+  <link rel="stylesheet" href="../shared/design-system.css">
   <link rel="stylesheet" href="popup.css">
 </head>
-<body>
-  <main class="container">
-    <header>
-      <h1>Daily check-in</h1>
-      <p id="status-text">Loading survey...</p>
+<body class="ds-page ds-atmosphere">
+  <main class="ext-popup">
+    <header class="ext-header">
+      <span class="ds-badge">Wellbeing Monitor</span>
+      <h1>Ежедневный check-in</h1>
+      <p id="status-text" class="ext-header__status ds-text-secondary">Загрузка опроса…</p>
     </header>
 
-    <section id="setup-panel" class="panel hidden">
-      <p>Configure your company secret key in settings below.</p>
+    <section id="setup-panel" class="ds-panel hidden">
+      <p class="ds-text-secondary" style="margin:0;font-size:0.875rem;line-height:1.55;">
+        Заполните в настройках: секретный ключ, external ID, email (как в трекере) и имя сотрудника.
+      </p>
     </section>
 
-    <form id="survey-form" class="panel hidden">
-      <div id="questions"></div>
-      <button type="submit" id="submit-btn">Submit answers</button>
+    <form id="survey-form" class="hidden">
+      <div id="questions" class="ds-panel"></div>
+      <button type="submit" id="submit-btn" class="ds-btn-primary" style="margin-top:0.875rem;">Отправить ответы</button>
     </form>
 
-    <section id="success-panel" class="panel hidden">
-      <p>Thank you! Your check-in was submitted.</p>
-      <p class="muted">Next reminder tomorrow.</p>
+    <section id="success-panel" class="ds-panel ext-success hidden">
+      <div class="ds-success-icon" aria-hidden="true">✓</div>
+      <p class="ext-success__title">Спасибо! Check-in отправлен.</p>
+      <p class="ds-text-muted" style="margin:0.5rem 0 0;font-size:0.8125rem;">Следующее напоминание — завтра.</p>
     </section>
 
-    <footer class="footer">
-      <button id="open-options" type="button" class="secondary">Open settings</button>
+    <footer class="ext-footer">
+      <button id="open-options" type="button" class="ds-btn-secondary">Настройки</button>
     </footer>
   </main>
 

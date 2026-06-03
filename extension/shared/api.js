@@ -44,8 +44,8 @@ export async function submitCheckIn(answers) {
       secret_key: config.secretKey,
       employee: {
         external_id: config.employeeExternalId,
-        email: config.employeeEmail || undefined,
-        name: config.employeeName || undefined,
+        email: config.employeeEmail.trim(),
+        name: config.employeeName.trim(),
       },
       answers,
     }),

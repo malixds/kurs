@@ -1,5 +1,11 @@
 import { fetchSurveyQuestions, submitCheckIn } from '../shared/api.js';
-import { CONFIG_KEYS, getConfig, markCheckInCompleted, shouldShowReminder } from '../shared/storage.js';
+import {
+  CONFIG_KEYS,
+  getConfig,
+  isExtensionConfigured,
+  markCheckInCompleted,
+  shouldShowReminder,
+} from '../shared/storage.js';
 
 const statusText = document.getElementById('status-text');
 const setupPanel = document.getElementById('setup-panel');
@@ -23,7 +29,8 @@ surveyForm.addEventListener('submit', async (event) => {
     showSuccess();
   } catch (error) {
     statusText.textContent = error.message;
-    statusText.classList.add('error');
+    statusText.classList.remove('ds-status--success');
+    statusText.classList.add('ds-status--error');
     submitBtn.disabled = false;
   }
 });
@@ -33,7 +40,7 @@ init();
 async function init() {
   const config = await getConfig();
 
-  if (!config[CONFIG_KEYS.secretKey]) {
+  if (!isExtensionConfigured(config)) {
     showSetup();
     return;
   }
@@ -47,27 +54,36 @@ async function init() {
     const questions = await fetchSurveyQuestions();
     renderQuestions(questions);
     surveyForm.classList.remove('hidden');
-    statusText.textContent = 'Share how you feel today.';
+    statusText.textContent = 'Расскажите, как вы себя чувствуете сегодня.';
+    statusText.classList.remove('ds-status--error', 'ds-status--success');
   } catch (error) {
     statusText.textContent = error.message;
-    statusText.classList.add('error');
+    statusText.classList.remove('ds-status--success');
+    statusText.classList.add('ds-status--error');
   }
 }
 
 function showSetup() {
   setupPanel.classList.remove('hidden');
-  statusText.textContent = 'Extension is not configured yet.';
+  statusText.textContent = 'Расширение ещё не настроено.';
+  statusText.classList.remove('ds-status--error', 'ds-status--success');
 }
 
 function showSuccess() {
   surveyForm.classList.add('hidden');
   successPanel.classList.remove('hidden');
-  statusText.textContent = 'Check-in completed.';
+  statusText.textContent = 'Check-in отправлен.';
+  statusText.classList.remove('ds-status--error');
+  statusText.classList.add('ds-status--success');
 }
 
 function showAlreadyCompleted() {
   successPanel.classList.remove('hidden');
-  statusText.textContent = 'You already completed today\'s check-in.';
+  successPanel.querySelector('.ext-success__title').textContent = 'Вы уже прошли check-in сегодня.';
+  successPanel.querySelector('.ds-text-muted').textContent = 'Новый опрос будет доступен завтра.';
+  statusText.textContent = 'На сегодня всё готово.';
+  statusText.classList.remove('ds-status--error');
+  statusText.classList.add('ds-status--success');
 }
 
 function renderQuestions(questions) {
@@ -75,11 +91,12 @@ function renderQuestions(questions) {
 
   questions.forEach((question) => {
     const block = document.createElement('div');
-    block.className = 'question-block';
+    block.className = 'ds-question';
     block.dataset.questionId = question.id;
     block.dataset.questionType = question.type;
 
-    const label = document.createElement('label');
+    const label = document.createElement('span');
+    label.className = 'ds-question__label';
     label.textContent = question.question;
     block.appendChild(label);
 
@@ -99,10 +116,12 @@ function renderScale(question) {
   const min = question.options?.min ?? 1;
   const max = question.options?.max ?? 5;
   const wrapper = document.createElement('div');
-  wrapper.className = 'scale-options';
+  wrapper.className = 'ds-scale';
+  wrapper.setAttribute('role', 'group');
 
   for (let value = min; value <= max; value += 1) {
     const label = document.createElement('label');
+    label.className = 'ds-scale__option';
     const input = document.createElement('input');
     input.type = 'radio';
     input.name = `question-${question.id}`;
@@ -118,24 +137,26 @@ function renderScale(question) {
 
 function renderBoolean() {
   const select = document.createElement('select');
+  select.className = 'ds-select';
   select.required = true;
   select.innerHTML = `
-    <option value="">Select...</option>
-    <option value="yes">Yes</option>
-    <option value="no">No</option>
+    <option value="">Выберите…</option>
+    <option value="yes">Да</option>
+    <option value="no">Нет</option>
   `;
   return select;
 }
 
 function renderText() {
   const textarea = document.createElement('textarea');
+  textarea.className = 'ds-textarea';
   textarea.rows = 3;
-  textarea.placeholder = 'Optional comment';
+  textarea.placeholder = 'Комментарий (необязательно)';
   return textarea;
 }
 
 function collectAnswers() {
-  return [...questionsContainer.querySelectorAll('.question-block')].map((block) => {
+  return [...questionsContainer.querySelectorAll('.ds-question')].map((block) => {
     const questionId = Number(block.dataset.questionId);
     const type = block.dataset.questionType;
     let answer = '';
