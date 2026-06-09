@@ -34,7 +34,15 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         RateLimiter::for('extension', function (Request $request) {
-            return Limit::perMinute(30)->by($request->ip());
+            // Key by company secret when present so one tenant cannot exhaust
+            // the limit for others behind a shared IP (offices, VPNs).
+            $secret = $request->header('X-Company-Key') ?? $request->input('secret_key');
+
+            return Limit::perMinute(30)->by(
+                is_string($secret) && $secret !== ''
+                    ? 'ext:'.hash('sha256', $secret)
+                    : 'ip:'.$request->ip(),
+            );
         });
 
         RateLimiter::for('login', function (Request $request) {

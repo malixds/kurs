@@ -12,3 +12,4 @@ backend/storage/framework/views/*
 .idea/
 .vscode/
 *.log
+/backups/

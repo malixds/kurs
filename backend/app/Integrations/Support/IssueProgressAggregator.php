@@ -3,7 +3,6 @@
 namespace App\Integrations\Support;
 
 use App\Integrations\DTO\EmployeeWorkProgressDto;
-use Carbon\Carbon;
 use Carbon\CarbonInterface;
 
 class IssueProgressAggregator

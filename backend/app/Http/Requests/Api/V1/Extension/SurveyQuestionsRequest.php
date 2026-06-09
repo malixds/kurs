@@ -11,6 +11,15 @@ class SurveyQuestionsRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        // The key belongs in a header so it never lands in access logs;
+        // query/body input is still accepted for older extension installs.
+        if ($this->header('X-Company-Key') !== null) {
+            $this->merge(['secret_key' => $this->header('X-Company-Key')]);
+        }
+    }
+
     public function rules(): array
     {
         return [

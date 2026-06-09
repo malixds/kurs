@@ -2,10 +2,11 @@
 
 namespace App\Http\Resources\Api\V1;
 
+use App\Models\SurveyQuestion;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/** @mixin \App\Models\SurveyQuestion */
+/** @mixin SurveyQuestion */
 class SurveyQuestionResource extends JsonResource
 {
     public function toArray(Request $request): array

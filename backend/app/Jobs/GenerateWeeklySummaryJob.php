@@ -14,6 +14,18 @@ class GenerateWeeklySummaryJob implements ShouldQueue
 {
     use Queueable;
 
+    public int $tries = 3;
+
+    /** @var array<int, int> */
+    public array $backoff = [30, 120];
+
+    public function failed(?\Throwable $exception): void
+    {
+        Log::error('Weekly summary generation failed', [
+            'exception' => $exception?->getMessage(),
+        ]);
+    }
+
     public function handle(AnalyticsService $analyticsService): void
     {
         Company::query()->each(function (Company $company) use ($analyticsService): void {

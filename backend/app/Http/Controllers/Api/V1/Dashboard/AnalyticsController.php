@@ -9,7 +9,6 @@ use App\Repositories\Contracts\EmployeeRepositoryInterface;
 use App\Services\Analytics\AnalyticsService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class AnalyticsController extends Controller
 {

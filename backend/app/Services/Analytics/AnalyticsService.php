@@ -4,7 +4,6 @@ namespace App\Services\Analytics;
 
 use App\DTOs\Analytics\AnalyticsFilterDto;
 use App\Repositories\Contracts\AnalyticsRepositoryInterface;
-use App\Services\Analytics\BurnoutRiskService;
 use Illuminate\Support\Facades\Cache;
 
 class AnalyticsService
@@ -67,10 +66,20 @@ class AnalyticsService
         ];
     }
 
+    /**
+     * Drops all cached analytics for a company by bumping the version that is
+     * baked into every cache key. Works on any cache store (no tag support needed).
+     */
+    public function invalidateCompanyCache(int $companyId): void
+    {
+        Cache::forever($this->versionKey($companyId), $this->cacheVersion($companyId) + 1);
+    }
+
     private function cacheKey(string $prefix, AnalyticsFilterDto $filter): string
     {
         return sprintf(
-            'analytics:%s:%d:%s:%s:%s:%s',
+            'analytics:v%d:%s:%d:%s:%s:%s:%s',
+            $this->cacheVersion($filter->companyId),
             $prefix,
             $filter->companyId,
             $filter->from->toDateString(),
@@ -78,5 +87,15 @@ class AnalyticsService
             $filter->employeeId ?? 'all',
             $filter->departmentId ?? 'all',
         );
+    }
+
+    private function cacheVersion(int $companyId): int
+    {
+        return (int) Cache::get($this->versionKey($companyId), 1);
+    }
+
+    private function versionKey(int $companyId): string
+    {
+        return sprintf('analytics:version:%d', $companyId);
     }
 }

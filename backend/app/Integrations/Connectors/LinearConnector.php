@@ -8,6 +8,7 @@ use App\Integrations\DTO\WorkProgressRequest;
 use App\Integrations\Enums\IntegrationProvider;
 use App\Integrations\Support\IssueProgressAggregator;
 use Carbon\Carbon;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
@@ -105,7 +106,7 @@ GQL;
         return array_slice($all, 0, $max);
     }
 
-    private function client(array $credentials): \Illuminate\Http\Client\PendingRequest
+    private function client(array $credentials): PendingRequest
     {
         return Http::baseUrl('https://api.linear.app')
             ->withToken($credentials['api_key'] ?? '')

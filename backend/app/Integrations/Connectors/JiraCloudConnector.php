@@ -8,6 +8,7 @@ use App\Integrations\DTO\WorkProgressRequest;
 use App\Integrations\Enums\IntegrationProvider;
 use App\Integrations\Support\IssueProgressAggregator;
 use Carbon\Carbon;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
@@ -221,7 +222,7 @@ class JiraCloudConnector implements WorkTrackerConnector
         );
     }
 
-    private function client(array $credentials): \Illuminate\Http\Client\PendingRequest
+    private function client(array $credentials): PendingRequest
     {
         $site = rtrim($credentials['site_url'] ?? '', '/');
         $email = $credentials['email'] ?? '';
