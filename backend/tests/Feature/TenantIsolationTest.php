@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\CheckIn;
 use App\Models\Company;
 use App\Models\Department;
 use App\Models\Employee;
@@ -10,6 +11,7 @@ use App\Models\SurveyAnswer;
 use App\Models\SurveyQuestion;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -26,6 +28,10 @@ class TenantIsolationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        // Analytics are cached by (company, date range); isolate tests from
+        // each other's cached aggregates.
+        Cache::flush();
 
         $this->companyA = Company::factory()->create();
         $this->companyB = Company::factory()->create();
@@ -85,17 +91,18 @@ class TenantIsolationTest extends TestCase
         $employeeA = Employee::factory()->for($this->companyA)->create();
         $employeeB = Employee::factory()->for($this->companyB)->create();
 
+        $checkInA = CheckIn::factory()->for($this->companyA)->for($employeeA)->create();
+        $checkInB = CheckIn::factory()->for($this->companyB)->for($employeeB)->create();
+
         SurveyAnswer::factory()->create([
-            'company_id' => $this->companyA->id,
-            'employee_id' => $employeeA->id,
+            'check_in_id' => $checkInA->id,
             'survey_question_id' => $question->id,
             'answer' => '4',
             'score' => 4,
         ]);
 
         SurveyAnswer::factory()->create([
-            'company_id' => $this->companyB->id,
-            'employee_id' => $employeeB->id,
+            'check_in_id' => $checkInB->id,
             'survey_question_id' => $question->id,
             'answer' => '1',
             'score' => 1,

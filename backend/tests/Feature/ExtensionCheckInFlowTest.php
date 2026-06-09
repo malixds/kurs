@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\CheckIn;
 use App\Models\Company;
 use App\Models\Employee;
 use App\Models\Survey;
@@ -85,6 +86,36 @@ class ExtensionCheckInFlowTest extends TestCase
         $this->assertEquals(4.0, (float) $scores[$this->scaleQuestion->id]);
         $this->assertEquals(5.0, (float) $scores[$this->booleanQuestion->id]);
         $this->assertNull($scores[$this->textQuestion->id]);
+    }
+
+    public function test_resubmitting_same_day_updates_instead_of_duplicating(): void
+    {
+        $payload = fn (string $mood) => [
+            'employee' => [
+                'external_id' => 'emp-dup',
+                'email' => 'dup@example.com',
+                'name' => 'Dup Tester',
+            ],
+            'answers' => [
+                ['question_id' => $this->scaleQuestion->id, 'answer' => $mood],
+                ['question_id' => $this->booleanQuestion->id, 'answer' => 'yes'],
+            ],
+        ];
+
+        $headers = ['X-Company-Key' => $this->company->secret_key];
+
+        $this->postJson('/api/v1/extension/check-in', $payload('5'), $headers)->assertCreated();
+        $this->postJson('/api/v1/extension/check-in', $payload('2'), $headers)->assertCreated();
+
+        // One check-in for the day, no duplicate answers, latest value wins.
+        $this->assertSame(1, CheckIn::query()->count());
+        $this->assertSame(2, SurveyAnswer::query()->count());
+
+        $score = SurveyAnswer::query()
+            ->where('survey_question_id', $this->scaleQuestion->id)
+            ->value('score');
+
+        $this->assertEquals(2.0, (float) $score);
     }
 
     public function test_check_in_rejects_question_from_another_survey(): void

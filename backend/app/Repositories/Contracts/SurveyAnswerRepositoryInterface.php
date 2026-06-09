@@ -3,20 +3,24 @@
 namespace App\Repositories\Contracts;
 
 use App\DTOs\CheckIn\AnswerDto;
+use App\Models\CheckIn;
 use App\Models\Employee;
-use App\Models\SurveyAnswer;
-use Illuminate\Support\Collection;
 
 interface SurveyAnswerRepositoryInterface
 {
     /**
+     * Persist (or update) a single daily check-in and its answers.
+     * Idempotent per (employee, day): re-submitting the same day updates the
+     * existing check-in and its answers instead of creating duplicates.
+     *
      * @param  list<AnswerDto>  $answers
-     * @return Collection<int, SurveyAnswer>
+     * @return CheckIn with its `answers` relation populated
      */
-    public function storeAnswers(
+    public function storeCheckIn(
         int $companyId,
         Employee $employee,
+        ?int $surveyId,
         array $answers,
         string $checkInDate,
-    ): Collection;
+    ): CheckIn;
 }
