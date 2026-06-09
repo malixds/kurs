@@ -59,6 +59,15 @@ function getEmployeeLastCheckInDate(config) {
   return dates[employeeId] ?? '';
 }
 
+export function isExtensionConfigured(config) {
+  return Boolean(
+    config[CONFIG_KEYS.secretKey]?.trim()
+    && config[CONFIG_KEYS.employeeExternalId]?.trim()
+    && config[CONFIG_KEYS.employeeEmail]?.trim()
+    && config[CONFIG_KEYS.employeeName]?.trim(),
+  );
+}
+
 export function shouldShowReminder(config) {
   const today = new Date().toISOString().slice(0, 10);
 

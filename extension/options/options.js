@@ -28,12 +28,29 @@ async function init() {
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
 
+  const email = fields.employeeEmail.value.trim();
+  const name = fields.employeeName.value.trim();
+
+  if (!email) {
+    saveStatus.textContent = 'Укажите email (как в трекере).';
+    saveStatus.classList.remove('ds-status--success');
+    saveStatus.classList.add('ds-status--error');
+    return;
+  }
+
+  if (!name) {
+    saveStatus.textContent = 'Укажите имя сотрудника.';
+    saveStatus.classList.remove('ds-status--success');
+    saveStatus.classList.add('ds-status--error');
+    return;
+  }
+
   const payload = {
     [CONFIG_KEYS.apiBaseUrl]: fields.apiBaseUrl.value.trim(),
     [CONFIG_KEYS.secretKey]: fields.secretKey.value.trim(),
     [CONFIG_KEYS.employeeExternalId]: fields.employeeExternalId.value.trim(),
-    [CONFIG_KEYS.employeeEmail]: fields.employeeEmail.value.trim(),
-    [CONFIG_KEYS.employeeName]: fields.employeeName.value.trim(),
+    [CONFIG_KEYS.employeeEmail]: email,
+    [CONFIG_KEYS.employeeName]: name,
     [CONFIG_KEYS.reminderHour]: Number(fields.reminderHour.value),
   };
 
@@ -44,5 +61,7 @@ form.addEventListener('submit', async (event) => {
     hour: payload[CONFIG_KEYS.reminderHour],
   });
 
-  saveStatus.textContent = 'Settings saved.';
+  saveStatus.textContent = 'Настройки сохранены.';
+  saveStatus.classList.remove('ds-status--error');
+  saveStatus.classList.add('ds-status--success');
 });
