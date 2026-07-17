@@ -6,6 +6,7 @@ use App\DTOs\CheckIn\CheckInDto;
 use App\Jobs\ProcessCheckInAnalyticsJob;
 use App\Models\Company;
 use App\Models\Employee;
+use App\Models\Survey;
 use App\Repositories\Contracts\CompanyRepositoryInterface;
 use App\Repositories\Contracts\DepartmentRepositoryInterface;
 use App\Repositories\Contracts\EmployeeRepositoryInterface;
@@ -29,13 +30,15 @@ class CheckInService
     {
         $company = $this->resolveCompany($dto->secretKey);
         $employee = $this->resolveEmployee($company, $dto);
-        $this->validateAnswers($company, $dto);
+        $survey = $this->resolveActiveSurvey($company);
+        $this->validateAnswers($survey, $dto);
 
         $checkInDate = now()->toDateString();
 
-        $answers = $this->surveyAnswerRepository->storeAnswers(
+        $checkIn = $this->surveyAnswerRepository->storeCheckIn(
             $company->id,
             $employee,
+            $survey->id,
             $dto->answers,
             $checkInDate,
         );
@@ -46,7 +49,7 @@ class CheckInService
             'company_id' => $company->id,
             'employee_id' => $employee->id,
             'check_in_date' => $checkInDate,
-            'answers_stored' => $answers->count(),
+            'answers_stored' => $checkIn->answers->count(),
         ];
     }
 
@@ -91,11 +94,20 @@ class CheckInService
         );
     }
 
-    private function validateAnswers(Company $company, CheckInDto $dto): void
+    private function resolveActiveSurvey(Company $company): Survey
     {
-        $activeQuestions = $this->surveyRepository
-            ->getActiveQuestionsForCompany($company->id)
-            ->keyBy('id');
+        $survey = $this->surveyRepository->getActiveSurveyForCompany($company->id);
+
+        if ($survey === null) {
+            throw new InvalidArgumentException('No active survey configured.');
+        }
+
+        return $survey;
+    }
+
+    private function validateAnswers(Survey $survey, CheckInDto $dto): void
+    {
+        $activeQuestions = $survey->questions->keyBy('id');
 
         if ($activeQuestions->isEmpty()) {
             throw new InvalidArgumentException('No active survey configured.');

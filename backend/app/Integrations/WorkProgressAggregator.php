@@ -4,6 +4,7 @@ namespace App\Integrations;
 
 use App\Integrations\Support\IntegrationEmployeeMatcher;
 use App\Integrations\Support\ProviderMetricsMerger;
+use App\Models\CompanyIntegration;
 use App\Models\Employee;
 use App\Models\EmployeeIntegrationIdentity;
 use App\Models\WorkProgressSnapshot;
@@ -14,6 +15,7 @@ class WorkProgressAggregator
         private readonly IntegrationEmployeeMatcher $employeeMatcher,
         private readonly ProviderMetricsMerger $metricsMerger = new ProviderMetricsMerger,
     ) {}
+
     /**
      * @param  array<string, array>  $snapshotsByProvider  slug => payload from snapshot
      */
@@ -118,7 +120,7 @@ class WorkProgressAggregator
 
     private function resolveEmployeeId(int $companyId, string $providerSlug, array $row, $employees): ?int
     {
-        $integration = \App\Models\CompanyIntegration::query()
+        $integration = CompanyIntegration::query()
             ->where('company_id', $companyId)
             ->where('provider_slug', $providerSlug)
             ->first();

@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Dashboard;
 
+use App\Enums\LlmRecommendationSource;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Dashboard\AnalysisPeriodRequest;
 use App\Http\Requests\Dashboard\DeepAnalysisRequest;
 use App\Integrations\IntegrationManager;
 use App\Integrations\WorkProgressAggregator;
-use App\Enums\LlmRecommendationSource;
 use App\Services\Analysis\DeepAnalysisExportService;
 use App\Services\Analysis\DeepAnalysisLlmPayloadBuilder;
 use App\Services\Analysis\LlmAnalysisService;

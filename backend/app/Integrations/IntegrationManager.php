@@ -5,7 +5,6 @@ namespace App\Integrations;
 use App\Integrations\DTO\WorkProgressRequest;
 use App\Integrations\Enums\IntegrationStatus;
 use App\Integrations\Support\IntegrationEmployeeMatcher;
-use App\Models\Company;
 use App\Models\CompanyIntegration;
 use App\Models\Employee;
 use App\Models\EmployeeIntegrationIdentity;

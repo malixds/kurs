@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\LlmRecommendationSource;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 class LlmRecommendation extends Model
 {
@@ -63,6 +64,6 @@ class LlmRecommendation extends Model
     {
         $text = preg_replace('/^\d+[\.\)]\s*/mu', '', $this->recommendation) ?? $this->recommendation;
 
-        return \Illuminate\Support\Str::limit(trim($text), $limit);
+        return Str::limit(trim($text), $limit);
     }
 }

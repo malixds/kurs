@@ -34,6 +34,11 @@ class Employee extends Model
         return $this->hasMany(SurveyAnswer::class);
     }
 
+    public function checkIns(): HasMany
+    {
+        return $this->hasMany(CheckIn::class);
+    }
+
     public function integrationIdentities(): HasMany
     {
         return $this->hasMany(EmployeeIntegrationIdentity::class);

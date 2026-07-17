@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Enums\QuestionType;
 use App\Enums\UserRole;
+use App\Models\CheckIn;
 use App\Models\Company;
 use App\Models\Department;
 use App\Models\Employee;
@@ -74,7 +75,8 @@ class DatabaseSeeder extends Seeder
         $employees = $this->seedEmployees($company, $departments);
 
         if ($this->shouldRefreshCompanyAnswers($company, self::DEMO_EMPLOYEE_COUNT, 400)) {
-            SurveyAnswer::query()->where('company_id', $company->id)->delete();
+            // Deleting check-ins cascades to their answers.
+            CheckIn::query()->where('company_id', $company->id)->delete();
             $this->seedRealisticMonthAnswers($company, $employees, $questionModels);
         }
     }
@@ -122,7 +124,8 @@ class DatabaseSeeder extends Seeder
         });
 
         if ($this->shouldRefreshCompanyAnswers($company, 3, 50)) {
-            SurveyAnswer::query()->where('company_id', $company->id)->delete();
+            // Deleting check-ins cascades to their answers.
+            CheckIn::query()->where('company_id', $company->id)->delete();
             $this->seedRealisticMonthAnswers($company, $employees, $questionModels);
         }
     }
@@ -267,7 +270,16 @@ class DatabaseSeeder extends Seeder
                 [$mood, $stress] = $this->scoresForDay($profile, $dayProgress, $daysAgo, $index);
                 $supported = $mood >= 3 && $stress <= 3 && random_int(1, 100) > 15;
 
+                $checkIn = CheckIn::query()->create([
+                    'company_id' => $company->id,
+                    'employee_id' => $employee->id,
+                    'survey_id' => $questionModels[0]->survey_id,
+                    'check_in_date' => $date->toDateString(),
+                    'completed_at' => $date->copy()->setTime(9 + random_int(0, 8), random_int(0, 59)),
+                ]);
+
                 SurveyAnswer::query()->create([
+                    'check_in_id' => $checkIn->id,
                     'company_id' => $company->id,
                     'employee_id' => $employee->id,
                     'survey_question_id' => $questionModels[0]->id,
@@ -277,6 +289,7 @@ class DatabaseSeeder extends Seeder
                 ]);
 
                 SurveyAnswer::query()->create([
+                    'check_in_id' => $checkIn->id,
                     'company_id' => $company->id,
                     'employee_id' => $employee->id,
                     'survey_question_id' => $questionModels[1]->id,
@@ -286,6 +299,7 @@ class DatabaseSeeder extends Seeder
                 ]);
 
                 SurveyAnswer::query()->create([
+                    'check_in_id' => $checkIn->id,
                     'company_id' => $company->id,
                     'employee_id' => $employee->id,
                     'survey_question_id' => $questionModels[2]->id,
@@ -296,6 +310,7 @@ class DatabaseSeeder extends Seeder
 
                 if ($questionModels->count() > 3 && $this->shouldAddTextComment($mood, $stress)) {
                     SurveyAnswer::query()->create([
+                        'check_in_id' => $checkIn->id,
                         'company_id' => $company->id,
                         'employee_id' => $employee->id,
                         'survey_question_id' => $questionModels[3]->id,

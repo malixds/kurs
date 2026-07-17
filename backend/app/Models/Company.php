@@ -62,6 +62,11 @@ class Company extends Model
         return $this->hasMany(SurveyAnswer::class);
     }
 
+    public function checkIns(): HasMany
+    {
+        return $this->hasMany(CheckIn::class);
+    }
+
     public function integrations(): HasMany
     {
         return $this->hasMany(CompanyIntegration::class);

@@ -1,38 +1,74 @@
 import { getConfig } from './storage.js';
 
-async function request(path, options = {}) {
-  const config = await getConfig();
-  const url = `${config.apiBaseUrl.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
+const REQUEST_TIMEOUT_MS = 15000;
 
-  const response = await fetch(url, {
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-      ...(options.headers ?? {}),
-    },
-    ...options,
-  });
+function buildUrl(baseUrl, path) {
+  return `${baseUrl.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
+}
+
+function extractErrorMessage(payload, status) {
+  if (typeof payload.message === 'string' && payload.message !== '') {
+    return payload.message;
+  }
+
+  if (payload.errors && typeof payload.errors === 'object') {
+    return Object.values(payload.errors).flat().join(' ');
+  }
+
+  return `Request failed with status ${status}`;
+}
+
+async function rawRequest(baseUrl, secretKey, path, options = {}) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  let response;
+
+  try {
+    response = await fetch(buildUrl(baseUrl, path), {
+      signal: controller.signal,
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'X-Company-Key': secretKey,
+        ...(options.headers ?? {}),
+      },
+      ...options,
+    });
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      throw new Error('Сервер не ответил за 15 секунд. Проверьте URL API и соединение.');
+    }
+    throw new Error('Не удалось подключиться к серверу. Проверьте URL API.');
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   const payload = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    const message = payload.message
-      ?? payload.errors
-      ?? `Request failed with status ${response.status}`;
-    throw new Error(typeof message === 'string' ? message : JSON.stringify(message));
+    throw new Error(extractErrorMessage(payload, response.status));
   }
 
   return payload;
 }
 
-export async function fetchSurveyQuestions() {
+async function request(path, options = {}) {
   const config = await getConfig();
 
-  const payload = await request(`survey/questions?secret_key=${encodeURIComponent(config.secretKey)}`, {
-    method: 'GET',
-  });
+  return rawRequest(config.apiBaseUrl, config.secretKey, path, options);
+}
+
+export async function fetchSurveyQuestions() {
+  const payload = await request('survey/questions', { method: 'GET' });
 
   return payload.data ?? [];
+}
+
+export async function testConnection(baseUrl, secretKey) {
+  const payload = await rawRequest(baseUrl, secretKey, 'survey/questions', { method: 'GET' });
+
+  return (payload.data ?? []).length;
 }
 
 export async function submitCheckIn(answers) {
@@ -41,7 +77,6 @@ export async function submitCheckIn(answers) {
   return request('check-in', {
     method: 'POST',
     body: JSON.stringify({
-      secret_key: config.secretKey,
       employee: {
         external_id: config.employeeExternalId,
         email: config.employeeEmail.trim(),

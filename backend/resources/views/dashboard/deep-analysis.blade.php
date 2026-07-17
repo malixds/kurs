@@ -259,12 +259,18 @@
             if (jiraRaw.meta?.jql) {
                 cards.push({ label: 'JQL', value: jiraRaw.meta.jql });
             }
-            summaryEl.innerHTML = cards.map((c) =>
-                `<div class="rounded-xl border border-black/[0.06] bg-[#F7F8FC]/60 px-4 py-3">
-                    <div class="text-xs ds-text-muted">${c.label}</div>
-                    <div class="mt-1 text-lg font-semibold text-[#111827]">${c.value}</div>
-                </div>`
-            ).join('');
+            summaryEl.replaceChildren(...cards.map((c) => {
+                const card = document.createElement('div');
+                card.className = 'rounded-xl border border-black/[0.06] bg-[#F7F8FC]/60 px-4 py-3';
+                const label = document.createElement('div');
+                label.className = 'text-xs ds-text-muted';
+                label.textContent = c.label;
+                const value = document.createElement('div');
+                value.className = 'mt-1 text-lg font-semibold text-[#111827]';
+                value.textContent = String(c.value);
+                card.append(label, value);
+                return card;
+            }));
             const warnEl = document.getElementById('tracker-warnings');
             const warnings = data.integration_warnings ?? [];
             if (warnings.length) {

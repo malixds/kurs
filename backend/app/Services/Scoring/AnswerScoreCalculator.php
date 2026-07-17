@@ -35,7 +35,8 @@ class AnswerScoreCalculator
 
     private function normalizeBoolean(string $answer): ?float
     {
-        $normalized = strtolower(trim($answer));
+        // mb_strtolower: plain strtolower() leaves Cyrillic «Да»/«Нет» untouched
+        $normalized = mb_strtolower(trim($answer));
 
         return match ($normalized) {
             '1', 'true', 'yes', 'да' => 5.0,
